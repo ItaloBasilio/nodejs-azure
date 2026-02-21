@@ -59,7 +59,6 @@ async function verificarLogin() {
     const res = await authFetch("/api/auth/check");
 
     if (!res.ok) {
-      // Se der erro, limpa token e manda pro login (exceto se já estiver nele)
       clearToken();
       if (!isLoginPage()) window.location.href = "/login";
       return false;
@@ -75,7 +74,23 @@ async function verificarLogin() {
 }
 
 /**
+ * Aplica permissões no menu:
+ * - Mostra "Criar Usuário" apenas para admin (elemento #menuUsuarios)
+ */
+function aplicarPermissoesMenu(data) {
+  const menuUsuarios = document.getElementById("menuUsuarios");
+  if (!menuUsuarios) return;
+
+  if (data?.usuario?.role === "admin") {
+    menuUsuarios.classList.remove("d-none");
+  } else {
+    menuUsuarios.classList.add("d-none");
+  }
+}
+
+/**
  * Carrega o usuário e escreve no elemento #userName.
+ * - Também aplica permissões do menu (admin).
  * - Se não encontrar o elemento, não quebra.
  */
 async function carregarUsuarioLogado() {
@@ -94,10 +109,12 @@ async function carregarUsuarioLogado() {
 
     const data = await res.json().catch(() => null);
 
-    if (el && data && data.usuario && data.usuario.nome) {
+    // ✅ aplica permissões do menu com base na role
+    aplicarPermissoesMenu(data);
+
+    if (el && data?.usuario?.nome) {
       el.innerText = `Bem-vindo, ${data.usuario.nome}`;
     } else {
-      // fallback
       if (el) el.innerText = "Bem-vindo";
       console.warn("⚠️ Resposta de /api/auth/check sem usuario.nome:", data);
     }
