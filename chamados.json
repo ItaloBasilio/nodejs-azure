@@ -13,6 +13,11 @@
         "data": "2026-02-21T01:23:48.602Z",
         "autor": "Analista",
         "mensagem": "Realizado contato com a usuaria. Em atendimento."
+      },
+      {
+        "data": "2026-02-21T13:35:59.534Z",
+        "autor": "João",
+        "mensagem": "Assumindo esse chamado"
       }
     ],
     "anexos": [
@@ -31,15 +36,43 @@
     "descricao": "Bom dia, tudo bem? por favor, preciso do reset de senha do meu email.\r\n\r\nSegue email: italobasiliodasilva@gmail.com\r\n\r\nPreciso entrar em uma reunião daqui a pouco",
     "prioridade": "Crítica",
     "solicitante": "Italo",
-    "status": "Aberto",
+    "status": "Em Atendimento",
     "dataCriacao": "2026-02-21T01:25:29.874Z",
-    "interacoes": [],
+    "interacoes": [
+      {
+        "data": "2026-02-21T13:30:33.724Z",
+        "autor": "Admin",
+        "mensagem": "Teste de interação"
+      },
+      {
+        "data": "2026-02-21T13:31:01.066Z",
+        "autor": "João",
+        "mensagem": "teste de interação"
+      },
+      {
+        "data": "2026-02-21T13:37:32.314Z",
+        "autor": "Admin",
+        "mensagem": "teste"
+      },
+      {
+        "data": "2026-02-21T13:37:50.262Z",
+        "autor": "João",
+        "mensagem": "teste"
+      }
+    ],
     "anexos": [
       {
         "nomeOriginal": "italo.png",
         "nomeSalvo": "1771637129870-688880006.png",
         "caminho": "/uploads/1771637129870-688880006.png",
         "dataUpload": "2026-02-21T01:25:29.874Z"
+      },
+      {
+        "nomeOriginal": "1744437386356.jpeg",
+        "nomeSalvo": "1771681078294-939753588.jpeg",
+        "caminho": "/uploads/1771681078294-939753588.jpeg",
+        "dataUpload": "2026-02-21T13:37:58.300Z",
+        "enviadoPor": "João"
       }
     ]
   }

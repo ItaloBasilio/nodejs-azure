@@ -9,6 +9,10 @@ function verificarLogin(req, res, next) {
     if (!req.session.logado) {
         return res.status(401).json({ error: "Não autorizado" });
     }
+
+    // 🔥 injeta o usuário no request
+    req.usuario = req.session.usuario;
+
     next();
 }
 

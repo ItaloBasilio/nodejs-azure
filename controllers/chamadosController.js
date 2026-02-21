@@ -1,4 +1,4 @@
-  const fs = require("fs");
+const fs = require("fs");
 const path = require("path");
 
 const filePath = path.join(__dirname, "../chamados.json");
@@ -15,13 +15,18 @@ function salvarChamados(chamados) {
     fs.writeFileSync(filePath, JSON.stringify(chamados, null, 2));
 }
 
+// helper para pegar usuário logado
+function getUsuario(req) {
+    // você pode depois trocar para req.usuario quando implementar JWT
+    return req.session.usuario || { nome: "Analista", perfil: "analista" };
+}
+
 // =============================
 // LISTAR TODOS
 // =============================
 exports.listarChamados = (req, res) => {
     const chamados = lerChamados();
 
-    // 🔽 ORDEM: mais recente primeiro
     chamados.sort((a, b) => Number(b.id) - Number(a.id));
 
     res.json(chamados);
@@ -38,22 +43,18 @@ exports.buscarChamadoPorId = (req, res) => {
         return res.status(404).json({ error: "Chamado não encontrado" });
     }
 
-    if (!chamado.interacoes) {
-        chamado.interacoes = [];
-    }
-
-    if (!chamado.anexos) {
-        chamado.anexos = [];
-    }
+    if (!chamado.interacoes) chamado.interacoes = [];
+    if (!chamado.anexos) chamado.anexos = [];
 
     res.json(chamado);
 };
 
 // =============================
-// CRIAR CHAMADO (COM ANEXOS)
+// CRIAR CHAMADO
 // =============================
 exports.criarChamado = (req, res) => {
     const chamados = lerChamados();
+    const usuario = getUsuario(req);
 
     let anexos = [];
 
@@ -62,7 +63,8 @@ exports.criarChamado = (req, res) => {
             nomeOriginal: file.originalname,
             nomeSalvo: file.filename,
             caminho: `/uploads/${file.filename}`,
-            dataUpload: new Date().toISOString()
+            dataUpload: new Date().toISOString(),
+            enviadoPor: usuario.nome
         }));
     }
 
@@ -75,6 +77,7 @@ exports.criarChamado = (req, res) => {
         solicitante: req.body.solicitante,
         status: "Aberto",
         dataCriacao: new Date().toISOString(),
+        criadoPor: usuario.nome,
         interacoes: [],
         anexos: anexos
     };
@@ -86,19 +89,18 @@ exports.criarChamado = (req, res) => {
 };
 
 // =============================
-// ADICIONAR ANEXO EM CHAMADO EXISTENTE
+// ADICIONAR ANEXO
 // =============================
 exports.adicionarAnexo = (req, res) => {
     const chamados = lerChamados();
     const chamado = chamados.find(c => c.id === req.params.id);
+    const usuario = getUsuario(req);
 
     if (!chamado) {
         return res.status(404).json({ error: "Chamado não encontrado" });
     }
 
-    if (!chamado.anexos) {
-        chamado.anexos = [];
-    }
+    if (!chamado.anexos) chamado.anexos = [];
 
     if (!req.files || req.files.length === 0) {
         return res.status(400).json({ error: "Nenhum arquivo enviado" });
@@ -108,7 +110,8 @@ exports.adicionarAnexo = (req, res) => {
         nomeOriginal: file.originalname,
         nomeSalvo: file.filename,
         caminho: `/uploads/${file.filename}`,
-        dataUpload: new Date().toISOString()
+        dataUpload: new Date().toISOString(),
+        enviadoPor: usuario.nome
     }));
 
     chamado.anexos.push(...novosAnexos);
@@ -140,18 +143,18 @@ exports.atualizarChamado = (req, res) => {
 exports.adicionarInteracao = (req, res) => {
     const chamados = lerChamados();
     const chamado = chamados.find(c => c.id === req.params.id);
+    const usuario = getUsuario(req);
 
     if (!chamado) {
         return res.status(404).json({ error: "Chamado não encontrado" });
     }
 
-    if (!chamado.interacoes) {
-        chamado.interacoes = [];
-    }
+    if (!chamado.interacoes) chamado.interacoes = [];
 
     const novaInteracao = {
         data: new Date().toISOString(),
-        autor: req.body.autor || "Analista",
+        autor: usuario.nome,
+        perfil: usuario.perfil,
         mensagem: req.body.mensagem
     };
 
@@ -167,9 +170,15 @@ exports.adicionarInteracao = (req, res) => {
 };
 
 // =============================
-// DELETAR CHAMADO
+// DELETAR CHAMADO (SOMENTE ADMIN)
 // =============================
 exports.deletarChamado = (req, res) => {
+    const usuario = getUsuario(req);
+
+    if (usuario.perfil !== "admin") {
+        return res.status(403).json({ error: "Apenas administradores podem deletar chamados" });
+    }
+
     let chamados = lerChamados();
 
     chamados = chamados.filter(chamado => chamado.id !== req.params.id);
@@ -180,9 +189,15 @@ exports.deletarChamado = (req, res) => {
 };
 
 // =============================
-// REMOVER ANEXO
+// REMOVER ANEXO (SOMENTE ADMIN)
 // =============================
 exports.removerAnexo = (req, res) => {
+    const usuario = getUsuario(req);
+
+    if (usuario.perfil !== "admin") {
+        return res.status(403).json({ error: "Apenas administradores podem remover anexos" });
+    }
+
     const chamados = lerChamados();
     const chamado = chamados.find(c => c.id === req.params.id);
 
