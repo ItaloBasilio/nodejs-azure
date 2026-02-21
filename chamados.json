@@ -18,6 +18,18 @@
         "data": "2026-02-21T13:35:59.534Z",
         "autor": "João",
         "mensagem": "Assumindo esse chamado"
+      },
+      {
+        "data": "2026-02-21T14:30:33.193Z",
+        "autor": "Admin",
+        "role": "admin",
+        "mensagem": "Oi"
+      },
+      {
+        "data": "2026-02-21T14:30:55.507Z",
+        "autor": "João",
+        "role": "analista",
+        "mensagem": "oi"
       }
     ],
     "anexos": [
@@ -73,6 +85,134 @@
         "caminho": "/uploads/1771681078294-939753588.jpeg",
         "dataUpload": "2026-02-21T13:37:58.300Z",
         "enviadoPor": "João"
+      }
+    ]
+  },
+  {
+    "id": "1771684313875",
+    "titulo": "Problemas com o Firewall",
+    "categoria": "Rede lenta",
+    "descricao": "Estou tentando acessar um site porem está bloqueando. Poderia verificar?",
+    "prioridade": "Crítica",
+    "solicitante": "Ricardo Cominotte",
+    "status": "Em Atendimento",
+    "dataCriacao": "2026-02-21T14:31:53.875Z",
+    "criadoPor": "João",
+    "interacoes": [
+      {
+        "data": "2026-02-21T15:43:03.423Z",
+        "autor": "João",
+        "role": "analista",
+        "mensagem": "Analisando o problema"
+      }
+    ],
+    "anexos": [
+      {
+        "nomeOriginal": "foto_perfil.jpg",
+        "nomeSalvo": "1771684313870-181562545.jpg",
+        "caminho": "/uploads/1771684313870-181562545.jpg",
+        "dataUpload": "2026-02-21T14:31:53.875Z",
+        "enviadoPor": "João"
+      },
+      {
+        "nomeOriginal": "1744437386356.jpeg",
+        "nomeSalvo": "1771684332773-587697732.jpeg",
+        "caminho": "/uploads/1771684332773-587697732.jpeg",
+        "dataUpload": "2026-02-21T14:32:12.776Z",
+        "enviadoPor": "João"
+      }
+    ]
+  },
+  {
+    "id": "1771684595421",
+    "titulo": "Desbloquear Usuário",
+    "categoria": "Usuário bloqueado",
+    "descricao": "Olá, tudo bem? Gostaria que meu usuario fosse desbloqueado. Não consigo trabalhar.",
+    "prioridade": "Alta",
+    "solicitante": "Fabricio",
+    "status": "Resolvido",
+    "dataCriacao": "2026-02-21T14:36:35.421Z",
+    "criadoPor": "João",
+    "interacoes": [
+      {
+        "data": "2026-02-21T14:39:46.617Z",
+        "autor": "João",
+        "role": "analista",
+        "mensagem": "Usuário desbloqueado com sucesso."
+      },
+      {
+        "data": "2026-02-21T15:03:25.321Z",
+        "autor": "Admin",
+        "role": "admin",
+        "mensagem": "teste"
+      }
+    ],
+    "anexos": []
+  },
+  {
+    "id": "1771684761355",
+    "titulo": "Inserir senha administrativa",
+    "categoria": "Permissões de pasta",
+    "descricao": "Ola, estou com o suporte local e precisamos inserir a senha administrativa para instalar um software.",
+    "prioridade": "Média",
+    "solicitante": "Gabriela",
+    "status": "Aberto",
+    "dataCriacao": "2026-02-21T14:39:21.355Z",
+    "criadoPor": "João",
+    "interacoes": [],
+    "anexos": []
+  },
+  {
+    "id": "1771684864265",
+    "titulo": "Problemas de Internet",
+    "categoria": "Internet da empresa caiu",
+    "descricao": "Olá, estamos com problemas de internet. Toda empresa não consegue acessar. Poderiam verificar por favor?",
+    "prioridade": "Crítica",
+    "solicitante": "Juliana",
+    "status": "Resolvido",
+    "dataCriacao": "2026-02-21T14:41:04.265Z",
+    "criadoPor": "João",
+    "interacoes": [
+      {
+        "data": "2026-02-21T15:08:32.517Z",
+        "autor": "João",
+        "role": "analista",
+        "mensagem": "Estamos verificando. Realizado testes de rede."
+      }
+    ],
+    "anexos": []
+  },
+  {
+    "id": "1771687953564",
+    "titulo": "Problemas com cabo de rede",
+    "categoria": "Rede lenta",
+    "descricao": "olá. Chegamos pela manhã e notamos problemas de rede em um computador. Ao verificar, percebemos que o cabo de rede está rompido/cortado.\r\nPoderiam verificar?",
+    "prioridade": "Média",
+    "solicitante": "Leonardo Ferreira",
+    "status": "Aberto",
+    "dataCriacao": "2026-02-21T15:32:33.564Z",
+    "criadoPor": "João",
+    "interacoes": [],
+    "anexos": []
+  },
+  {
+    "id": "1771689046400",
+    "titulo": "Problemas com o leitor facial ( Control ID)",
+    "categoria": "Erro no sistema",
+    "descricao": "Ao tentar entrar na sala hoje, o leitor facial nao reconheceu meu rosto e precisei usar a senha.",
+    "prioridade": "Alta",
+    "solicitante": "Thiago Trigueiro",
+    "status": "Aberto",
+    "dataCriacao": "2026-02-21T15:50:46.400Z",
+    "criadoPor": "Admin",
+    "interacoes": [],
+    "anexos": [
+      {
+        "nomeOriginal": "italo.png",
+        "nomeSalvo": "1771689046394-584662871.png",
+        "caminho": "/uploads/1771689046394-584662871.png",
+        "dataUpload": "2026-02-21T15:50:46.400Z",
+        "enviadoPor": "Admin"
       }
     ]
   }

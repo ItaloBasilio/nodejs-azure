@@ -15,7 +15,7 @@ function salvarChamados(chamados) {
   fs.writeFileSync(filePath, JSON.stringify(chamados, null, 2));
 }
 
-// helper: agora vem do JWT middleware
+// helper: usuário vem do JWT middleware (authJwt)
 function getUsuario(req) {
   return req.usuario || { nome: "Desconhecido", role: "analista" };
 }
@@ -36,10 +36,13 @@ exports.buscarChamadoPorId = (req, res) => {
   const chamados = lerChamados();
   const chamado = chamados.find((c) => c.id === req.params.id);
 
-  if (!chamado) return res.status(404).json({ error: "Chamado não encontrado" });
+  if (!chamado) {
+    return res.status(404).json({ error: "Chamado não encontrado" });
+  }
 
   if (!chamado.interacoes) chamado.interacoes = [];
   if (!chamado.anexos) chamado.anexos = [];
+  if (!chamado.dataCriacao) chamado.dataCriacao = new Date().toISOString();
 
   res.json(chamado);
 };
@@ -50,6 +53,13 @@ exports.buscarChamadoPorId = (req, res) => {
 exports.criarChamado = (req, res) => {
   const chamados = lerChamados();
   const usuario = getUsuario(req);
+
+  // validações básicas
+  const { titulo, categoria, descricao, prioridade, solicitante } = req.body;
+
+  if (!titulo || !categoria || !descricao || !prioridade || !solicitante) {
+    return res.status(400).json({ error: "Preencha todos os campos obrigatórios" });
+  }
 
   let anexos = [];
   if (req.files && req.files.length > 0) {
@@ -64,16 +74,16 @@ exports.criarChamado = (req, res) => {
 
   const novoChamado = {
     id: Date.now().toString(),
-    titulo: req.body.titulo,
-    categoria: req.body.categoria,
-    descricao: req.body.descricao,
-    prioridade: req.body.prioridade,
-    solicitante: req.body.solicitante,
+    titulo,
+    categoria,
+    descricao,
+    prioridade,
+    solicitante,
     status: "Aberto",
     dataCriacao: new Date().toISOString(),
     criadoPor: usuario.nome,
     interacoes: [],
-    anexos: anexos,
+    anexos,
   };
 
   chamados.push(novoChamado);
@@ -84,13 +94,17 @@ exports.criarChamado = (req, res) => {
 
 // =============================
 // ADICIONAR ANEXO EM CHAMADO EXISTENTE
+// (admin e analista podem adicionar; só admin remove)
 // =============================
 exports.adicionarAnexo = (req, res) => {
   const chamados = lerChamados();
   const chamado = chamados.find((c) => c.id === req.params.id);
   const usuario = getUsuario(req);
 
-  if (!chamado) return res.status(404).json({ error: "Chamado não encontrado" });
+  if (!chamado) {
+    return res.status(404).json({ error: "Chamado não encontrado" });
+  }
+
   if (!chamado.anexos) chamado.anexos = [];
 
   if (!req.files || req.files.length === 0) {
@@ -108,18 +122,38 @@ exports.adicionarAnexo = (req, res) => {
   chamado.anexos.push(...novosAnexos);
 
   salvarChamados(chamados);
-  res.json({ message: "Anexo(s) adicionado(s) com sucesso", anexos: chamado.anexos });
+
+  res.json({
+    message: "Anexo(s) adicionado(s) com sucesso",
+    anexos: chamado.anexos,
+  });
 };
 
 // =============================
 // ATUALIZAR CHAMADO
+// (protege campos sensíveis: analista não pode alterar tudo)
 // =============================
 exports.atualizarChamado = (req, res) => {
+  const usuario = getUsuario(req);
   let chamados = lerChamados();
 
-  chamados = chamados.map((chamado) =>
-    chamado.id === req.params.id ? { ...chamado, ...req.body } : chamado
-  );
+  const idx = chamados.findIndex((c) => c.id === req.params.id);
+  if (idx === -1) {
+    return res.status(404).json({ error: "Chamado não encontrado" });
+  }
+
+  const chamadoAtual = chamados[idx];
+
+  // admin pode tudo; analista só pode mudar status (ex.: resolver)
+  let patch = req.body || {};
+
+  if (usuario.role !== "admin") {
+    const permitido = {};
+    if (typeof patch.status === "string") permitido.status = patch.status;
+    patch = permitido;
+  }
+
+  chamados[idx] = { ...chamadoAtual, ...patch };
 
   salvarChamados(chamados);
   res.json({ message: "Chamado atualizado" });
@@ -133,21 +167,33 @@ exports.adicionarInteracao = (req, res) => {
   const chamado = chamados.find((c) => c.id === req.params.id);
   const usuario = getUsuario(req);
 
-  if (!chamado) return res.status(404).json({ error: "Chamado não encontrado" });
+  if (!chamado) {
+    return res.status(404).json({ error: "Chamado não encontrado" });
+  }
+
   if (!chamado.interacoes) chamado.interacoes = [];
+
+  const mensagem = (req.body?.mensagem || "").toString().trim();
+  if (!mensagem) {
+    return res.status(400).json({ error: "Mensagem é obrigatória" });
+  }
 
   const novaInteracao = {
     data: new Date().toISOString(),
     autor: usuario.nome,
     role: usuario.role,
-    mensagem: req.body.mensagem,
+    mensagem,
   };
 
   chamado.interacoes.push(novaInteracao);
 
-  if (chamado.status === "Aberto") chamado.status = "Em Atendimento";
+  // regra automática
+  if (chamado.status === "Aberto") {
+    chamado.status = "Em Atendimento";
+  }
 
   salvarChamados(chamados);
+
   res.json({ message: "Interação adicionada com sucesso", chamado });
 };
 
@@ -165,6 +211,7 @@ exports.deletarChamado = (req, res) => {
   chamados = chamados.filter((chamado) => chamado.id !== req.params.id);
 
   salvarChamados(chamados);
+
   res.json({ message: "Chamado deletado" });
 };
 
@@ -181,16 +228,29 @@ exports.removerAnexo = (req, res) => {
   const chamados = lerChamados();
   const chamado = chamados.find((c) => c.id === req.params.id);
 
-  if (!chamado) return res.status(404).json({ error: "Chamado não encontrado" });
-  if (!chamado.anexos) return res.status(400).json({ error: "Nenhum anexo encontrado" });
+  if (!chamado) {
+    return res.status(404).json({ error: "Chamado não encontrado" });
+  }
+
+  if (!chamado.anexos) {
+    return res.status(400).json({ error: "Nenhum anexo encontrado" });
+  }
 
   const nomeArquivo = req.params.nomeArquivo;
 
+  const antes = chamado.anexos.length;
   chamado.anexos = chamado.anexos.filter((a) => a.nomeSalvo !== nomeArquivo);
 
+  if (chamado.anexos.length === antes) {
+    return res.status(404).json({ error: "Anexo não encontrado" });
+  }
+
   const caminhoArquivo = path.join(__dirname, "../public/uploads", nomeArquivo);
-  if (fs.existsSync(caminhoArquivo)) fs.unlinkSync(caminhoArquivo);
+  if (fs.existsSync(caminhoArquivo)) {
+    fs.unlinkSync(caminhoArquivo);
+  }
 
   salvarChamados(chamados);
+
   res.json({ message: "Anexo removido com sucesso" });
 };

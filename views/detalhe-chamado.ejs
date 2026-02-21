@@ -114,7 +114,7 @@
                         </form>
 
                         <div class="mt-3" id="listaAnexos">
-                            <% if (chamado.anexos && chamado.anexos.length> 0) { %>
+                            <% if (chamado.anexos && chamado.anexos.length > 0) { %>
                                 <% chamado.anexos.forEach(function(anexo){ %>
 
                                     <div class="d-flex justify-content-between align-items-center border p-2 mb-2 rounded">
@@ -159,7 +159,7 @@
                     </div>
                     <div class="card-body">
 
-                        <% if (chamado.interacoes && chamado.interacoes.length> 0) { %>
+                        <% if (chamado.interacoes && chamado.interacoes.length > 0) { %>
                             <% chamado.interacoes.forEach(function(interacao){ %>
                                 <div class="border-bottom pb-3 mb-3">
                                     <div class="d-flex justify-content-between">
@@ -203,34 +203,58 @@
 
     <script>
         const chamadoId = "<%= chamado.id %>";
+        let usuarioLogadoCache = null;
 
-        async function verificarLogin() {
+        async function verificarLoginLocal() {
             const token = getToken();
             if (!token) {
                 window.location.href = "/login";
-                return;
+                return false;
             }
 
             const response = await authFetch("/api/auth/check");
             if (!response.ok) {
                 localStorage.removeItem("token");
                 window.location.href = "/login";
+                return false;
             }
+
+            return true;
+        }
+
+        async function obterUsuarioLogado() {
+            if (usuarioLogadoCache) return usuarioLogadoCache;
+
+            const res = await authFetch("/api/auth/check");
+            if (!res.ok) return null;
+
+            const data = await res.json().catch(() => null);
+            usuarioLogadoCache = data?.usuario || null;
+            return usuarioLogadoCache;
         }
 
         async function enviarInteracao() {
-            const mensagem = document.getElementById("mensagem").value;
+            const mensagem = document.getElementById("mensagem").value.trim();
 
             if (!mensagem) {
                 alert("Digite uma mensagem.");
                 return;
             }
 
-            await authFetch(`/api/chamados/${chamadoId}/interacao`, {
+            const usuario = await obterUsuarioLogado();
+            const autor = usuario?.nome || "Analista";
+
+            const res = await authFetch(`/api/chamados/${chamadoId}/interacao`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ mensagem })
+                body: JSON.stringify({ mensagem, autor })
             });
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => null);
+                alert(data?.error || "Erro ao salvar interação.");
+                return;
+            }
 
             location.reload();
         }
@@ -285,11 +309,8 @@
         });
 
         async function aplicarPermissoesFront() {
-            const res = await authFetch("/api/auth/check");
-            if (!res.ok) return;
-
-            const data = await res.json();
-            const role = data?.usuario?.role;
+            const usuario = await obterUsuarioLogado();
+            const role = usuario?.role;
 
             // 🔒 Remover anexo: só admin
             if (role !== "admin") {
@@ -300,7 +321,9 @@
         }
 
         async function iniciar() {
-            await verificarLogin();
+            const ok = await verificarLoginLocal();
+            if (!ok) return;
+
             await carregarUsuarioLogado();
             await aplicarPermissoesFront();
         }

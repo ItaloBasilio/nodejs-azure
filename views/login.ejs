@@ -45,6 +45,10 @@
             Usuário ou senha inválidos
         </div>
 
+        <div id="erroApi" class="alert alert-warning d-none" role="alert">
+            Não foi possível conectar ao servidor. Tente novamente.
+        </div>
+
         <form id="loginForm">
             <div class="mb-3">
                 <label class="form-label">Usuário</label>
@@ -77,7 +81,10 @@
 </div>
 
 <script>
-// Se já tiver token, tenta validar e manda pro dashboard
+/**
+ * Se já tiver token, tenta validar e manda pro dashboard
+ * - Se inválido, remove token pra evitar "meio logado"
+ */
 (async function(){
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -89,34 +96,57 @@
 
         if (res.ok) {
             window.location.href = "/";
+            return;
         }
+
+        localStorage.removeItem("token");
     } catch (e) {
-        // ignora
+        // erro de rede -> não remove token, não redireciona
     }
 })();
 
 document.getElementById("loginForm").addEventListener("submit", async function(e){
     e.preventDefault();
 
-    const usuario = document.getElementById("usuario").value;
+    const usuario = document.getElementById("usuario").value.trim();
     const senha = document.getElementById("senha").value;
     const erroDiv = document.getElementById("erro");
+    const erroApiDiv = document.getElementById("erroApi");
 
     erroDiv.classList.add("d-none");
+    erroApiDiv.classList.add("d-none");
 
-    const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ usuario, senha })
-    });
+    try {
+        const response = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ usuario, senha })
+        });
 
-    const data = await response.json().catch(() => null);
+        const data = await response.json().catch(() => null);
 
-    if(response.ok && data && data.token){
-        localStorage.setItem("token", data.token);
-        window.location.href = "/";
-    } else {
+        if (response.ok && data && data.token) {
+            // ✅ salva token
+            localStorage.setItem("token", data.token);
+
+            // ✅ "aquece" o check com o token novo (evita tela inicial sem nome)
+            try {
+                await fetch("/api/auth/check", {
+                    headers: { "Authorization": `Bearer ${data.token}` }
+                });
+            } catch (e) {
+                // ignora
+            }
+
+            window.location.href = "/";
+            return;
+        }
+
+        // credenciais inválidas
         erroDiv.classList.remove("d-none");
+    } catch (err) {
+        console.error("Erro ao tentar logar:", err);
+        erroApiDiv.classList.remove("d-none");
     }
 });
 </script>

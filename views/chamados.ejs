@@ -144,18 +144,21 @@
     <script>
         const API = "/api/chamados";
 
-        async function verificarLogin() {
+        async function verificarLoginLocal() {
             const token = getToken();
             if (!token) {
                 window.location.href = "/login";
-                return;
+                return false;
             }
 
             const response = await authFetch("/api/auth/check");
             if (!response.ok) {
                 localStorage.removeItem("token");
                 window.location.href = "/login";
+                return false;
             }
+
+            return true;
         }
 
         function badgeStatus(status) {
@@ -236,7 +239,9 @@
         });
 
         async function iniciar() {
-            await verificarLogin();
+            const ok = await verificarLoginLocal();
+            if (!ok) return;
+
             await carregarUsuarioLogado();
             await carregarChamados();
         }

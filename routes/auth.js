@@ -5,7 +5,7 @@ const { JWT_SECRET, authJwt } = require("../middlewares/authJwt");
 
 // 🔐 Base de usuários mock (depois você troca por banco)
 const usuarios = [
-  { id: 1, nome: "Admin", usuario: "admin", senha: "1234", role: "admin" },
+  { id: 1, nome: "Admin", usuario: "admin", senha: "admin", role: "admin" },
   { id: 2, nome: "João", usuario: "joao", senha: "1234", role: "analista" },
 ];
 
