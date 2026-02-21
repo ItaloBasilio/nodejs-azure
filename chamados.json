@@ -48,7 +48,7 @@
     "descricao": "Bom dia, tudo bem? por favor, preciso do reset de senha do meu email.\r\n\r\nSegue email: italobasiliodasilva@gmail.com\r\n\r\nPreciso entrar em uma reunião daqui a pouco",
     "prioridade": "Crítica",
     "solicitante": "Italo",
-    "status": "Em Atendimento",
+    "status": "Resolvido",
     "dataCriacao": "2026-02-21T01:25:29.874Z",
     "interacoes": [
       {
@@ -95,7 +95,7 @@
     "descricao": "Estou tentando acessar um site porem está bloqueando. Poderia verificar?",
     "prioridade": "Crítica",
     "solicitante": "Ricardo Cominotte",
-    "status": "Em Atendimento",
+    "status": "Resolvido",
     "dataCriacao": "2026-02-21T14:31:53.875Z",
     "criadoPor": "João",
     "interacoes": [
@@ -156,10 +156,17 @@
     "descricao": "Ola, estou com o suporte local e precisamos inserir a senha administrativa para instalar um software.",
     "prioridade": "Média",
     "solicitante": "Gabriela",
-    "status": "Aberto",
+    "status": "Resolvido",
     "dataCriacao": "2026-02-21T14:39:21.355Z",
     "criadoPor": "João",
-    "interacoes": [],
+    "interacoes": [
+      {
+        "data": "2026-02-21T17:05:29.328Z",
+        "autor": "Admin",
+        "role": "admin",
+        "mensagem": "Realizado o acesso remoto e resolvido."
+      }
+    ],
     "anexos": []
   },
   {
@@ -202,10 +209,17 @@
     "descricao": "Ao tentar entrar na sala hoje, o leitor facial nao reconheceu meu rosto e precisei usar a senha.",
     "prioridade": "Alta",
     "solicitante": "Thiago Trigueiro",
-    "status": "Aberto",
+    "status": "Resolvido",
     "dataCriacao": "2026-02-21T15:50:46.400Z",
     "criadoPor": "Admin",
-    "interacoes": [],
+    "interacoes": [
+      {
+        "data": "2026-02-21T16:43:31.141Z",
+        "autor": "João",
+        "role": "analista",
+        "mensagem": "Estou verificando nesse momento"
+      }
+    ],
     "anexos": [
       {
         "nomeOriginal": "italo.png",
@@ -215,5 +229,18 @@
         "enviadoPor": "Admin"
       }
     ]
+  },
+  {
+    "id": "1771692756402",
+    "titulo": "Instalação de Impressora",
+    "categoria": "Não imprime",
+    "descricao": "Gostaria de solicitar o mapeamento ou instalação da impressora. Não estou conseguindo imprimir nada. Nem digitalizar.",
+    "prioridade": "Alta",
+    "solicitante": "Carla",
+    "status": "Aberto",
+    "dataCriacao": "2026-02-21T16:52:36.402Z",
+    "criadoPor": "Admin",
+    "interacoes": [],
+    "anexos": []
   }
 ]

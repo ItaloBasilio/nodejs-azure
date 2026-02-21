@@ -27,6 +27,11 @@ router.get("/novo-chamado", function (req, res) {
   res.render("novo-chamado");
 });
 
+// ✅ NOVA TELA: Criar Usuário (apenas a view por enquanto)
+router.get("/usuarios", function (req, res) {
+  res.render("usuarios");
+});
+
 /* ===============================
    DETALHE DO CHAMADO
 ================================= */
@@ -47,7 +52,8 @@ router.get("/chamados/:id", function (req, res) {
     // ✅ garante estrutura mínima (evita quebrar o EJS)
     if (!chamadoEncontrado.interacoes) chamadoEncontrado.interacoes = [];
     if (!chamadoEncontrado.anexos) chamadoEncontrado.anexos = [];
-    if (!chamadoEncontrado.dataCriacao) chamadoEncontrado.dataCriacao = new Date().toISOString();
+    if (!chamadoEncontrado.dataCriacao)
+      chamadoEncontrado.dataCriacao = new Date().toISOString();
 
     res.render("detalhe-chamado", {
       chamado: chamadoEncontrado,

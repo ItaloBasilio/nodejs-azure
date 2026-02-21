@@ -1,6 +1,43 @@
 <div class="col-md-2 sidebar p-3">
     <h6 class="text-white">Menu</h6>
-    <a href="/"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="/chamados"><i class="bi bi-ticket"></i> Chamados</a>
-    <a href="/novo-chamado"><i class="bi bi-plus-circle"></i> Novo Chamado</a>
+
+    <a href="/">
+        <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+
+    <a href="/chamados">
+        <i class="bi bi-ticket"></i> Chamados
+    </a>
+
+    <a href="/novo-chamado">
+        <i class="bi bi-plus-circle"></i> Novo Chamado
+    </a>
+
+    <!-- 🔒 Somente ADMIN -->
+    <a href="/usuarios" id="menuUsuarios" style="display:none;">
+        <i class="bi bi-people"></i> Criar Usuário
+    </a>
 </div>
+
+<script>
+(async function aplicarPermissaoMenu() {
+    try {
+        const res = await fetch("/api/auth/check", {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+            }
+        });
+
+        if (!res.ok) return;
+
+        const data = await res.json();
+
+        if (data.usuario?.role === "admin") {
+            const menu = document.getElementById("menuUsuarios");
+            if (menu) menu.style.display = "block";
+        }
+    } catch (e) {
+        // silêncio proposital
+    }
+})();
+</script>

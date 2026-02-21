@@ -32,7 +32,7 @@ app.set("view engine", "ejs");
 app.use("/api/auth", authRouter);
 app.use("/api/chamados", chamadosRouter);
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
+app.use('/api/usuarios', usersRouter);
 
 /* ======================
    404

@@ -1,15 +1,45 @@
+// routes/auth.js
+
 var express = require("express");
 var router = express.Router();
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
+const path = require("path");
 const { JWT_SECRET, authJwt } = require("../middlewares/authJwt");
 
-// 🔐 Base de usuários mock (depois você troca por banco)
-const usuarios = [
-  { id: 1, nome: "Admin", usuario: "admin", senha: "admin", role: "admin" },
-  { id: 2, nome: "João", usuario: "joao", senha: "1234", role: "analista" },
-];
+// Arquivo onde ficam os usuários
+const usuariosPath = path.join(__dirname, "../usuarios.json");
 
-// LOGIN -> devolve token
+/* ===============================
+   HELPERS
+================================= */
+function lerUsuarios() {
+  // Se não existir, cria com admin padrão
+  if (!fs.existsSync(usuariosPath)) {
+    fs.writeFileSync(
+      usuariosPath,
+      JSON.stringify(
+        [
+          {
+            id: 1,
+            nome: "Admin",
+            usuario: "admin",
+            senha: "admin",
+            role: "admin",
+          },
+        ],
+        null,
+        2
+      )
+    );
+  }
+
+  return JSON.parse(fs.readFileSync(usuariosPath, "utf8"));
+}
+
+/* ===============================
+   LOGIN -> devolve token
+================================= */
 router.post("/login", (req, res) => {
   const { usuario, senha } = req.body;
 
@@ -20,7 +50,11 @@ router.post("/login", (req, res) => {
     });
   }
 
-  const user = usuarios.find((u) => u.usuario === usuario && u.senha === senha);
+  const usuarios = lerUsuarios();
+
+  const user = usuarios.find(
+    (u) => u.usuario === usuario && String(u.senha) === String(senha)
+  );
 
   if (!user) {
     return res.status(401).json({
@@ -46,7 +80,9 @@ router.post("/login", (req, res) => {
   });
 });
 
-// CHECK -> valida token e devolve usuário
+/* ===============================
+   CHECK -> valida token e devolve usuário
+================================= */
 router.get("/check", authJwt, (req, res) => {
   return res.json({
     logado: true,
@@ -58,8 +94,9 @@ router.get("/check", authJwt, (req, res) => {
   });
 });
 
-// LOGOUT -> em JWT não existe "deslogar" no servidor (token expira).
-// Mantemos a rota por compatibilidade.
+/* ===============================
+   LOGOUT -> em JWT é no client
+================================= */
 router.post("/logout", (req, res) => {
   return res.json({ logout: true });
 });
