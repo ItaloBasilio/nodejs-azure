@@ -3,35 +3,21 @@
     "id": 1,
     "nome": "Admin",
     "usuario": "admin",
-    "senha": "Ib648013@Ib2029",
+    "senha": "1",
     "role": "admin"
   },
   {
-    "id": 1771695916677,
-    "nome": "Maria",
-    "usuario": "maria",
-    "senha": "maria",
-    "role": "analista"
-  },
-  {
-    "id": 1771696498731,
-    "nome": "João",
-    "usuario": "joao",
-    "senha": "joao",
-    "role": "analista"
-  },
-  {
-    "id": 1771696573248,
-    "nome": "Pedro Alves",
-    "usuario": "pedro",
-    "senha": "pedro",
-    "role": "analista"
-  },
-  {
-    "id": 1771696685813,
+    "id": 1771700941465,
     "nome": "Vinicius Santos",
-    "usuario": "vini",
-    "senha": "vini",
-    "role": "admin"
+    "usuario": "vinicius",
+    "senha": "1",
+    "role": "analista"
+  },
+  {
+    "id": 1771702823317,
+    "nome": "João Gomes",
+    "usuario": "joao",
+    "senha": "2",
+    "role": "analista"
   }
 ]

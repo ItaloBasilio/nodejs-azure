@@ -11,14 +11,9 @@
     <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
 
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
+        body { background-color: #f8f9fa; }
 
-        .sidebar {
-            height: 100vh;
-            background-color: #212529;
-        }
+        .sidebar { height: 100vh; background-color: #212529; }
 
         .sidebar a {
             color: #adb5bd;
@@ -27,10 +22,8 @@
             padding: 10px;
         }
 
-        .sidebar a:hover {
-            background-color: #343a40;
-            color: #fff;
-        }
+        .sidebar a:hover { background-color: #343a40; color: #fff; }
+        .sidebar .active { background-color: #343a40; color: #fff; }
     </style>
 </head>
 
@@ -49,12 +42,8 @@
     <div class="container-fluid">
         <div class="row">
 
-            <div class="col-md-2 sidebar p-3">
-                <h6 class="text-white">Menu</h6>
-                <a href="/"><i class="bi bi-speedometer2"></i> Dashboard</a>
-                <a href="/chamados"><i class="bi bi-ticket"></i> Chamados</a>
-                <a href="/novo-chamado"><i class="bi bi-plus-circle"></i> Novo Chamado</a>
-            </div>
+            <!-- ✅ MENU (partial) -->
+            <%- include("partials/sidebar") %>
 
             <div class="col-md-10 p-4">
 
@@ -194,6 +183,15 @@
     <script src="/js/auth.js"></script>
 
     <script>
+        // ✅ marca o item atual no menu
+        function marcarMenuAtivo() {
+            const path = window.location.pathname;
+            document.querySelectorAll(".sidebar a").forEach(a => {
+                const href = a.getAttribute("href");
+                if (href === path) a.classList.add("active");
+            });
+        }
+
         async function verificarLoginLocal() {
             const token = getToken();
             if (!token) {
@@ -239,15 +237,16 @@
         });
 
         async function iniciar() {
+            marcarMenuAtivo();
+
             const ok = await verificarLoginLocal();
             if (!ok) return;
 
-            await carregarUsuarioLogado();
+            await carregarUsuarioLogado(); // ✅ libera o menu admin no sidebar
         }
 
         iniciar();
     </script>
 
 </body>
-
 </html>

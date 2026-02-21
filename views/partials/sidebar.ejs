@@ -4,8 +4,51 @@
     <a href="/chamados"><i class="bi bi-ticket"></i> Chamados</a>
     <a href="/novo-chamado"><i class="bi bi-plus-circle"></i> Novo Chamado</a>
 
-    <!-- Só aparece para ADMIN (feito no front via JS) -->
+    <!-- Só aparece para ADMIN -->
     <a href="/usuarios" id="menuUsuarios" class="d-none">
-        <i class="bi bi-people"></i> Criar Usuário
+        <i class="bi bi-people"></i> Gestão de Usuários
     </a>
 </div>
+
+<script>
+(function () {
+    async function ensureAuthLoadedAndApply() {
+        // Se auth.js já estiver carregado, usa direto
+        if (typeof window.carregarUsuarioLogado === "function") {
+            try {
+                await window.carregarUsuarioLogado();
+            } catch (e) {
+                console.error("Erro ao executar carregarUsuarioLogado:", e);
+            }
+            return;
+        }
+
+        // Caso não esteja carregado, injeta o script /js/auth.js
+        await new Promise((resolve, reject) => {
+            const s = document.createElement("script");
+            s.src = "/js/auth.js";
+            s.onload = resolve;
+            s.onerror = reject;
+            document.body.appendChild(s);
+        });
+
+        // Depois de carregar, aplica permissões
+        if (typeof window.carregarUsuarioLogado === "function") {
+            try {
+                await window.carregarUsuarioLogado();
+            } catch (e) {
+                console.error("Erro ao executar carregarUsuarioLogado após load:", e);
+            }
+        } else {
+            console.warn("auth.js carregou, mas carregarUsuarioLogado não está disponível.");
+        }
+    }
+
+    // Garante execução depois que o DOM existir
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", ensureAuthLoadedAndApply);
+    } else {
+        ensureAuthLoadedAndApply();
+    }
+})();
+</script>

@@ -99,7 +99,9 @@ router.post("/", somenteAdmin, (req, res) => {
 
   const usuariosDb = lerUsuarios();
 
-  const existe = usuariosDb.find((u) => String(u.usuario).toLowerCase() === String(usuario).toLowerCase());
+  const existe = usuariosDb.find(
+    (u) => String(u.usuario).toLowerCase() === String(usuario).toLowerCase()
+  );
   if (existe) {
     return res.status(400).json({
       error: "Usuário já existe",
@@ -110,7 +112,7 @@ router.post("/", somenteAdmin, (req, res) => {
     id: Date.now(),
     nome: String(nome).trim(),
     usuario: String(usuario).trim(),
-    senha: String(senha), // depois você pode hashear
+    senha: String(senha), // futuramente: hash
     role,
   };
 
@@ -151,6 +153,89 @@ router.put("/:id/senha", somenteAdmin, (req, res) => {
   salvarUsuarios(usuariosDb);
 
   return res.json({ message: "Senha alterada com sucesso" });
+});
+
+/**
+ * PUT /:id/role
+ * Alterar role (admin apenas)
+ * Body: { "role": "admin" | "analista" }
+ */
+router.put("/:id/role", somenteAdmin, (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body;
+
+  if (!role) {
+    return res.status(400).json({ error: "Informe a nova role" });
+  }
+
+  const roleOk = role === "admin" || role === "analista";
+  if (!roleOk) {
+    return res.status(400).json({
+      error: "Role inválida. Use: admin ou analista",
+    });
+  }
+
+  // ❗ Segurança: impede admin de mudar a própria role
+  if (String(id) === String(req.usuario.id)) {
+    return res.status(400).json({
+      error: "Não é permitido alterar a própria role",
+    });
+  }
+
+  const usuariosDb = lerUsuarios();
+  const idx = usuariosDb.findIndex((u) => String(u.id) === String(id));
+
+  if (idx === -1) {
+    return res.status(404).json({ error: "Usuário não encontrado" });
+  }
+
+  usuariosDb[idx].role = role;
+  salvarUsuarios(usuariosDb);
+
+  return res.json({
+    message: "Role alterada com sucesso",
+    usuario: {
+      id: usuariosDb[idx].id,
+      nome: usuariosDb[idx].nome,
+      usuario: usuariosDb[idx].usuario,
+      role: usuariosDb[idx].role,
+    },
+  });
+});
+
+/**
+ * DELETE /:id
+ * Deletar usuário (admin apenas)
+ */
+router.delete("/:id", somenteAdmin, (req, res) => {
+  const { id } = req.params;
+
+  const usuariosDb = lerUsuarios();
+  const idx = usuariosDb.findIndex((u) => String(u.id) === String(id));
+
+  if (idx === -1) {
+    return res.status(404).json({ error: "Usuário não encontrado" });
+  }
+
+  // ❗ Segurança: impede admin de se deletar
+  if (String(usuariosDb[idx].id) === String(req.usuario.id)) {
+    return res.status(400).json({
+      error: "Não é permitido deletar o próprio usuário",
+    });
+  }
+
+  const removido = usuariosDb.splice(idx, 1)[0];
+  salvarUsuarios(usuariosDb);
+
+  return res.json({
+    message: "Usuário removido com sucesso",
+    usuario: {
+      id: removido.id,
+      nome: removido.nome,
+      usuario: removido.usuario,
+      role: removido.role,
+    },
+  });
 });
 
 module.exports = router;

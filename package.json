@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "cross-env NODE_ENV=production node ./bin/www",
+    "dev": "cross-env NODE_ENV=development nodemon ./bin/www"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
@@ -16,5 +17,9 @@
     "jsonwebtoken": "^9.0.3",
     "morgan": "~1.9.1",
     "multer": "^2.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "cross-env": "^7.0.3"
   }
 }
