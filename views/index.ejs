@@ -123,6 +123,9 @@
         </div>
     </div>
 
+    <!-- ✅ AUTH HELPER (JWT) -->
+    <script src="/js/auth.js"></script>
+
     <script>
         const API = "/api/chamados";
 
@@ -141,12 +144,21 @@
         }
 
         async function verificarLogin() {
-            const response = await fetch("/api/auth/check", { credentials: "include" });
-            if (!response.ok) window.location.href = "/login";
+            const token = getToken();
+            if (!token) {
+                window.location.href = "/login";
+                return;
+            }
+
+            const response = await authFetch("/api/auth/check");
+            if (!response.ok) {
+                localStorage.removeItem("token");
+                window.location.href = "/login";
+            }
         }
 
         async function carregarChamados() {
-            const response = await fetch(API, { credentials: "include" });
+            const response = await authFetch(API);
             if (!response.ok) return;
 
             let chamados = await response.json();
@@ -165,7 +177,8 @@
             document.getElementById("cardAtendimento").innerText = atendimento;
             document.getElementById("cardCriticos").innerText = criticos;
 
-            chamados.sort((a, b) => b.id - a.id);
+            // OBS: seu backend já manda ordenado, mas deixei aqui também
+            chamados.sort((a, b) => Number(b.id) - Number(a.id));
             chamados = chamados.slice(0, 3);
 
             const tbody = document.getElementById("tabelaUltimos");
@@ -173,53 +186,28 @@
 
             chamados.forEach(ch => {
                 tbody.innerHTML += `
-            <tr>
-                <td>${ch.id}</td>
-                <td>${ch.titulo}</td>
-                <td>${ch.solicitante}</td>
-                <td><span class="badge ${badgeStatus(ch.status)}">${ch.status}</span></td>
-                <td><span class="badge ${badgePrioridade(ch.prioridade)}">${ch.prioridade}</span></td>
-            </tr>
-        `;
+                    <tr>
+                        <td>${ch.id}</td>
+                        <td>${ch.titulo}</td>
+                        <td>${ch.solicitante}</td>
+                        <td><span class="badge ${badgeStatus(ch.status)}">${ch.status}</span></td>
+                        <td><span class="badge ${badgePrioridade(ch.prioridade)}">${ch.prioridade}</span></td>
+                    </tr>
+                `;
             });
         }
 
-        document.getElementById("logoutBtn").addEventListener("click", async () => {
-            await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-            window.location.href = "/login";
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            logout();
         });
 
         async function iniciar() {
             await verificarLogin();
-            carregarChamados();
+            await carregarUsuarioLogado();
+            await carregarChamados();
         }
 
         iniciar();
-    </script>
-
-    <script>
-        async function carregarUsuarioLogado() {
-            try {
-                const response = await fetch('/api/auth/check');
-
-                if (!response.ok) {
-                    window.location.href = "/login";
-                    return;
-                }
-
-                const data = await response.json();
-
-                if (data.usuario && data.usuario.nome) {
-                    document.getElementById("userName").innerText =
-                        "Bem-vindo, " + data.usuario.nome;
-                }
-
-            } catch (err) {
-                console.error("Erro ao carregar usuário", err);
-            }
-        }
-
-        carregarUsuarioLogado();
     </script>
 
 </body>

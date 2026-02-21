@@ -77,6 +77,24 @@
 </div>
 
 <script>
+// Se já tiver token, tenta validar e manda pro dashboard
+(async function(){
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+        const res = await fetch("/api/auth/check", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+            window.location.href = "/";
+        }
+    } catch (e) {
+        // ignora
+    }
+})();
+
 document.getElementById("loginForm").addEventListener("submit", async function(e){
     e.preventDefault();
 
@@ -84,14 +102,18 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
     const senha = document.getElementById("senha").value;
     const erroDiv = document.getElementById("erro");
 
+    erroDiv.classList.add("d-none");
+
     const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {"Content-Type":"application/json"},
-        credentials: "include",
         body: JSON.stringify({ usuario, senha })
     });
 
-    if(response.ok){
+    const data = await response.json().catch(() => null);
+
+    if(response.ok && data && data.token){
+        localStorage.setItem("token", data.token);
         window.location.href = "/";
     } else {
         erroDiv.classList.remove("d-none");

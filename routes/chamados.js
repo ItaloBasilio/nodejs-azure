@@ -1,3 +1,4 @@
+const { authJwt } = require("../middlewares/authJwt");
 var express = require('express');
 var router = express.Router();
 const path = require('path');
@@ -17,7 +18,7 @@ function verificarLogin(req, res, next) {
 }
 
 // 🔐 Protege TODAS as rotas abaixo
-router.use(verificarLogin);
+router.use(authJwt);
 
 
 
