@@ -75,6 +75,8 @@ router.get('/:id', chamadosController.buscarChamadoPorId);
 // Criar chamado COM upload
 router.post('/', upload.array('anexos', 5), chamadosController.criarChamado);
 
+router.post('/:id/anexo', upload.array('anexos'), chamadosController.adicionarAnexo);
+
 // Atualizar chamado
 router.put('/:id', chamadosController.atualizarChamado);
 
@@ -86,5 +88,7 @@ router.delete('/:id', chamadosController.deletarChamado);
 
 // Remover anexo
 router.delete('/:id/anexo/:nomeArquivo', chamadosController.removerAnexo);
+
+
 
 module.exports = router;
