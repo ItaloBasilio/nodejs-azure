@@ -1,0 +1,180 @@
+[
+  {
+    "id": "1771588073525",
+    "titulo": "Problemas com o Windows",
+    "categoria": "Suporte Técnico",
+    "descricao": "Colaborador reporta problemas com o Windows. Afirma que o mesmo está corrompido",
+    "prioridade": "Média",
+    "solicitante": "Ricardo",
+    "status": "Resolvido"
+  },
+  {
+    "id": "1771588996728",
+    "titulo": "Desativar o wifi na TX Capital",
+    "categoria": "Suporte Técnico",
+    "descricao": "Carla entrou em contato solicitando a desativação do Wifi no local. Como não está sendo utilizado, a mesma pediu a desativação.",
+    "prioridade": "Baixa",
+    "solicitante": "Carla",
+    "status": "Resolvido",
+    "interacoes": [
+      {
+        "data": "2026-02-20T17:06:49.123Z",
+        "autor": "Analista",
+        "mensagem": "Teste de interação"
+      },
+      {
+        "data": "2026-02-20T17:07:46.050Z",
+        "autor": "Analista",
+        "mensagem": "Na TX realizei as instalações devidas."
+      }
+    ]
+  },
+  {
+    "id": "1771605940423",
+    "titulo": "Teste Italo",
+    "categoria": "Suporte Técnico",
+    "descricao": "Teste Italo",
+    "prioridade": "Crítica",
+    "solicitante": "Italo",
+    "status": "Em Atendimento",
+    "dataCriacao": "2026-02-20T16:45:40.423Z",
+    "interacoes": [
+      {
+        "data": "2026-02-20T19:35:48.317Z",
+        "autor": "Analista",
+        "mensagem": "Realizado instalação de SSD na máquina do usuário. Aguardando retorno do mesmo para validar se o problema persiste."
+      }
+    ]
+  },
+  {
+    "id": "1771607324978",
+    "titulo": "Nicoletti",
+    "categoria": "Suporte Técnico",
+    "descricao": "Gabriela entrou em contato solicitando suporte para instalação do GCPJ.",
+    "prioridade": "Baixa",
+    "solicitante": "Italo Basilio",
+    "status": "Resolvido",
+    "dataCriacao": "2026-02-20T17:08:44.978Z",
+    "interacoes": [
+      {
+        "data": "2026-02-20T17:09:16.129Z",
+        "autor": "Analista",
+        "mensagem": "Usuaria foi informada que estamos verificando internamente os procedimentos."
+      }
+    ]
+  },
+  {
+    "id": "1771614654789",
+    "titulo": "Problemas com antenas de Wifi",
+    "categoria": "Suporte Técnico",
+    "descricao": "Paulo Jr reportou problemas com as antenas. Afirma que o sinal está bastante fraco.",
+    "prioridade": "Alta",
+    "solicitante": "Paulo Jr",
+    "status": "Resolvido",
+    "dataCriacao": "2026-02-20T19:10:54.798Z",
+    "interacoes": [
+      {
+        "data": "2026-02-20T19:11:40.820Z",
+        "autor": "Analista",
+        "mensagem": "Foi verificado , realizando testes com o notebook conectado nas duas redes wifi. O sinal não oscilou em nenhum momento e a velocidade se manteve."
+      }
+    ]
+  },
+  {
+    "id": "1771615809574",
+    "titulo": "Nicoletti - Sistema GCPJ",
+    "categoria": "Suporte Técnico",
+    "descricao": "Gabriela entrou em contato reportando problemas com o sistema GCPJ.",
+    "prioridade": "Alta",
+    "solicitante": "Gabriela",
+    "status": "Em Atendimento",
+    "dataCriacao": "2026-02-20T19:30:09.574Z",
+    "interacoes": [
+      {
+        "data": "2026-02-20T22:30:39.088Z",
+        "autor": "Analista",
+        "mensagem": "teste"
+      }
+    ],
+    "anexos": [
+      {
+        "nomeOriginal": "File.jpg",
+        "nomeSalvo": "1771615809567-779765388.jpg",
+        "caminho": "/uploads/1771615809567-779765388.jpg",
+        "dataUpload": "2026-02-20T19:30:09.574Z"
+      }
+    ]
+  },
+  {
+    "id": "1771616611621",
+    "titulo": "Problemas com Switch",
+    "categoria": "Suporte Técnico",
+    "descricao": "João reporta problemas no switch. Esta fazendo barulho",
+    "prioridade": "Alta",
+    "solicitante": "João Pedro",
+    "status": "Em Atendimento",
+    "dataCriacao": "2026-02-20T19:43:31.621Z",
+    "interacoes": [
+      {
+        "data": "2026-02-20T19:52:49.957Z",
+        "autor": "Analista",
+        "mensagem": "Testando funcionalidade de remover anexo"
+      },
+      {
+        "data": "2026-02-20T19:53:18.469Z",
+        "autor": "Analista",
+        "mensagem": "Funcionalidade de download do anexo funcionando corretamente."
+      }
+    ],
+    "anexos": []
+  },
+  {
+    "id": "1771619269402",
+    "titulo": "Preventiva - Limpeza de máquina",
+    "categoria": "Suporte Técnico",
+    "descricao": "Luis solicitou suporte para limpeza na máquina. Passar pasta, verificar problemas de software.",
+    "prioridade": "Baixa",
+    "solicitante": "Ricardo",
+    "status": "Em Atendimento",
+    "dataCriacao": "2026-02-20T20:27:49.402Z",
+    "interacoes": [
+      {
+        "data": "2026-02-20T20:28:33.244Z",
+        "autor": "Analista",
+        "mensagem": "Realizado visita no local. Aguardando feedback do cliente."
+      }
+    ],
+    "anexos": [
+      {
+        "nomeOriginal": "File.jpg",
+        "nomeSalvo": "1771619269123-569963696.jpg",
+        "caminho": "/uploads/1771619269123-569963696.jpg",
+        "dataUpload": "2026-02-20T20:27:49.402Z"
+      }
+    ]
+  },
+  {
+    "id": "1771626906782",
+    "titulo": "Reset de senha",
+    "categoria": "Suporte Técnico",
+    "descricao": "bom dia , solicito reset senha ",
+    "prioridade": "Baixa",
+    "solicitante": "Vinicius ",
+    "status": "Aberto",
+    "dataCriacao": "2026-02-20T22:35:06.782Z",
+    "interacoes": [],
+    "anexos": []
+  },
+  {
+    "id": "1771632148801",
+    "titulo": "TEste de chamado",
+    "categoria": "Suporte Técnico",
+    "descricao": "TEste de chamado",
+    "prioridade": "Baixa",
+    "solicitante": "Italo Basilio",
+    "status": "Aberto",
+    "dataCriacao": "2026-02-21T00:02:28.801Z",
+    "interacoes": [],
+    "anexos": []
+  }
+]

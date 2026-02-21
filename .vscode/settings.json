@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/3acd883b-28ba-4b12-8df4-cf55bdd81871/resourceGroups/appsvc_linux_brazilsouth/providers/Microsoft.Web/sites/site-nodejs-azure",
+    "appService.deploySubpath": "."
+}

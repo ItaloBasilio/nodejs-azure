@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Service Desk - Dashboard</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        body { background-color: #f8f9fa; }
+        .sidebar { height: 100vh; background-color: #212529; }
+        .sidebar a {
+            color: #adb5bd;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+        }
+        .sidebar a:hover {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .card-dashboard { border-left: 5px solid #0d6efd; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/"><i class="bi bi-headset"></i> Service Desk</a>
+        <div class="d-flex">
+            <span class="navbar-text text-white me-3">Bem-vindo, Admin</span>
+            <button id="logoutBtn" class="btn btn-outline-light btn-sm">Sair</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- MENU -->
+        <div class="col-md-2 sidebar p-3">
+            <h6 class="text-white">Menu</h6>
+            <a href="/"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="/chamados"><i class="bi bi-ticket"></i> Chamados</a>
+            <a href="/novo-chamado"><i class="bi bi-plus-circle"></i> Novo Chamado</a>
+        </div>
+
+        <div class="col-md-10 p-4">
+
+            <!-- CARDS -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card card-dashboard shadow-sm">
+                        <div class="card-body">
+                            <h6>Chamados Abertos</h6>
+                            <h3 id="cardAbertos">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-success shadow-sm">
+                        <div class="card-body">
+                            <h6>Resolvidos</h6>
+                            <h3 id="cardResolvidos">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-warning shadow-sm">
+                        <div class="card-body">
+                            <h6>Em Atendimento</h6>
+                            <h3 id="cardAtendimento">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-danger shadow-sm">
+                        <div class="card-body">
+                            <h6>Críticos</h6>
+                            <h3 id="cardCriticos">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÚLTIMOS 3 CHAMADOS -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    Últimos Chamados
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Título</th>
+                                <th>Usuário</th>
+                                <th>Status</th>
+                                <th>Prioridade</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaUltimos"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+const API = "/api/chamados";
+
+function badgeStatus(status) {
+    if (status === "Aberto") return "bg-warning";
+    if (status === "Resolvido") return "bg-success";
+    if (status === "Em Atendimento") return "bg-primary";
+    return "bg-secondary";
+}
+
+function badgePrioridade(prioridade) {
+    if (prioridade === "Crítica") return "bg-danger";
+    if (prioridade === "Alta") return "bg-danger";
+    if (prioridade === "Média") return "bg-warning";
+    return "bg-secondary";
+}
+
+async function verificarLogin() {
+    const response = await fetch("/api/auth/check", { credentials: "include" });
+    if (!response.ok) window.location.href = "/login";
+}
+
+async function carregarChamados() {
+    const response = await fetch(API, { credentials: "include" });
+    if (!response.ok) return;
+
+    let chamados = await response.json();
+
+    let abertos = 0, resolvidos = 0, atendimento = 0, criticos = 0;
+
+    chamados.forEach(ch => {
+        if (ch.status === "Aberto") abertos++;
+        if (ch.status === "Resolvido") resolvidos++;
+        if (ch.status === "Em Atendimento") atendimento++;
+        if (ch.prioridade === "Crítica") criticos++;
+    });
+
+    document.getElementById("cardAbertos").innerText = abertos;
+    document.getElementById("cardResolvidos").innerText = resolvidos;
+    document.getElementById("cardAtendimento").innerText = atendimento;
+    document.getElementById("cardCriticos").innerText = criticos;
+
+    chamados.sort((a, b) => b.id - a.id);
+    chamados = chamados.slice(0, 3);
+
+    const tbody = document.getElementById("tabelaUltimos");
+    tbody.innerHTML = "";
+
+    chamados.forEach(ch => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${ch.id}</td>
+                <td>${ch.titulo}</td>
+                <td>${ch.solicitante}</td>
+                <td><span class="badge ${badgeStatus(ch.status)}">${ch.status}</span></td>
+                <td><span class="badge ${badgePrioridade(ch.prioridade)}">${ch.prioridade}</span></td>
+            </tr>
+        `;
+    });
+}
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    window.location.href = "/login";
+});
+
+async function iniciar() {
+    await verificarLogin();
+    carregarChamados();
+}
+
+iniciar();
+</script>
+
+</body>
+</html>

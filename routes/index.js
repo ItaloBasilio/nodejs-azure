@@ -1,0 +1,69 @@
+var express = require('express');
+var router = express.Router();
+const fs = require('fs');
+const path = require('path');
+
+/* ===============================
+   Middleware de Autenticação
+================================= */
+function authMiddleware(req, res, next) {
+  if (!req.session || !req.session.logado) {
+    return res.redirect('/login');
+  }
+  next();
+}
+
+/* ===============================
+   ROTAS PÚBLICAS
+================================= */
+
+router.get('/login', function (req, res) {
+  res.render('login');
+});
+
+/* ===============================
+   ROTAS PROTEGIDAS
+================================= */
+
+router.get('/', authMiddleware, function (req, res) {
+  res.render('index');
+});
+
+router.get('/chamados', authMiddleware, function (req, res) {
+  res.render('chamados');
+});
+
+router.get('/novo-chamado', authMiddleware, function (req, res) {
+  res.render('novo-chamado');
+});
+
+/* ===============================
+   DETALHE DO CHAMADO
+================================= */
+
+router.get('/chamados/:id', authMiddleware, function (req, res) {
+
+  const id = req.params.id;
+
+  try {
+    const filePath = path.join(__dirname, '../chamados.json');
+    const chamados = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+    const chamadoEncontrado = chamados.find(c => String(c.id) === String(id));
+
+    if (!chamadoEncontrado) {
+      return res.status(404).send('Chamado não encontrado.');
+    }
+
+    res.render('detalhe-chamado', {
+      chamado: chamadoEncontrado
+    });
+
+  } catch (error) {
+    console.error("Erro ao carregar chamado:", error);
+    res.status(500).send("Erro interno ao carregar chamado.");
+  }
+
+});
+
+module.exports = router;
