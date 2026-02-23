@@ -56,16 +56,27 @@
 
                         <form id="formChamado" enctype="multipart/form-data">
 
+                            <!-- ✅ Título + Cliente + Categoria -->
                             <div class="row mb-3">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label">Título</label>
                                     <input type="text" name="titulo" class="form-control" required>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-4">
+                                    <label class="form-label">Cliente</label>
+                                    <select name="cliente" class="form-select" required>
+                                        <option value="">Selecione o cliente</option>
+                                        <option value="Cliente A">Cliente A</option>
+                                        <option value="Cliente B">Cliente B</option>
+                                        <option value="Cliente C">Cliente C</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
                                     <label class="form-label">Categoria</label>
 
-                                    <select id="categoriaSelect" name="categoria" class="form-select">
+                                    <select id="categoriaSelect" name="categoria" class="form-select" required>
 
                                         <optgroup label="Acesso e Permissões">
                                             <option>Reset de senha</option>
@@ -158,8 +169,7 @@
 
                             <div class="mb-3">
                                 <label class="form-label">Anexar Evidências (Imagens ou PDF)</label>
-                                <input type="file" name="anexos" class="form-control" accept=".jpg,.jpeg,.png,.pdf"
-                                    multiple>
+                                <input type="file" name="anexos" class="form-control" accept=".jpg,.jpeg,.png,.pdf" multiple>
                                 <small class="text-muted">
                                     Formatos aceitos: JPG, PNG, PDF (máx 5MB cada, até 5 arquivos)
                                 </small>
