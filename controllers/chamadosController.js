@@ -55,9 +55,9 @@ exports.criarChamado = (req, res) => {
   const usuario = getUsuario(req);
 
   // validações básicas
-  const { titulo, categoria, descricao, prioridade, solicitante } = req.body;
+  const { titulo, cliente, categoria, descricao, prioridade, solicitante } = req.body;
 
-  if (!titulo || !categoria || !descricao || !prioridade || !solicitante) {
+  if (!titulo || !cliente || !categoria || !descricao || !prioridade || !solicitante) {
     return res.status(400).json({ error: "Preencha todos os campos obrigatórios" });
   }
 
@@ -74,11 +74,12 @@ exports.criarChamado = (req, res) => {
 
   const novoChamado = {
     id: Date.now().toString(),
-    titulo,
-    categoria,
-    descricao,
-    prioridade,
-    solicitante,
+    titulo: String(titulo).trim(),
+    cliente: String(cliente).trim(), // ✅ NOVO CAMPO
+    categoria: String(categoria).trim(),
+    descricao: String(descricao).trim(),
+    prioridade: String(prioridade).trim(),
+    solicitante: String(solicitante).trim(),
     status: "Aberto",
     dataCriacao: new Date().toISOString(),
     criadoPor: usuario.nome,

@@ -7,17 +7,10 @@
     "role": "admin"
   },
   {
-    "id": 1771700941465,
-    "nome": "Vinicius Santos",
-    "usuario": "vinicius",
+    "id": 1771894262624,
+    "nome": "Andressa Dubout",
+    "usuario": "andressadubout",
     "senha": "1",
-    "role": "analista"
-  },
-  {
-    "id": 1771702823317,
-    "nome": "João Gomes",
-    "usuario": "joao",
-    "senha": "2",
     "role": "analista"
   }
 ]

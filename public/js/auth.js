@@ -39,7 +39,7 @@ async function authFetch(url, options = {}) {
 
   return fetch(url, {
     ...options,
-    headers
+    headers,
   });
 }
 
@@ -75,16 +75,24 @@ async function verificarLogin() {
 
 /**
  * Aplica permissões no menu:
- * - Mostra "Criar Usuário" apenas para admin (elemento #menuUsuarios)
+ * - Mostra itens ADMIN somente quando role === "admin"
+ *   #menuUsuarios (Gestão de Usuários)
+ *   #menuClientes (Gestão de Clientes)
  */
 function aplicarPermissoesMenu(data) {
   const menuUsuarios = document.getElementById("menuUsuarios");
-  if (!menuUsuarios) return;
+  const menuClientes = document.getElementById("menuClientes");
 
-  if (data?.usuario?.role === "admin") {
-    menuUsuarios.classList.remove("d-none");
-  } else {
-    menuUsuarios.classList.add("d-none");
+  const isAdmin = data?.usuario?.role === "admin";
+
+  if (menuUsuarios) {
+    if (isAdmin) menuUsuarios.classList.remove("d-none");
+    else menuUsuarios.classList.add("d-none");
+  }
+
+  if (menuClientes) {
+    if (isAdmin) menuClientes.classList.remove("d-none");
+    else menuClientes.classList.add("d-none");
   }
 }
 

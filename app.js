@@ -3,6 +3,7 @@ const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
+const clientesRouter = require("./routes/clientes");
 
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
@@ -33,6 +34,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/chamados", chamadosRouter);
 app.use("/", indexRouter);
 app.use('/api/usuarios', usersRouter);
+app.use("/api/clientes", clientesRouter);
 
 /* ======================
    404

@@ -12,7 +12,7 @@ router.get("/login", function (req, res) {
 });
 
 /* ===============================
-   ROTAS (JWT VALIDADO NO FRONT + API)
+   ROTAS (JWT VALIDADO NO FRONT)
 ================================= */
 
 router.get("/", function (req, res) {
@@ -27,9 +27,15 @@ router.get("/novo-chamado", function (req, res) {
   res.render("novo-chamado");
 });
 
-// ✅ NOVA TELA: Criar Usuário (apenas a view por enquanto)
 router.get("/usuarios", function (req, res) {
   res.render("usuarios");
+});
+
+/* ===============================
+   ✅ NOVA ROTA: GESTÃO DE CLIENTES
+================================= */
+router.get("/clientes", function (req, res) {
+  res.render("clientes");
 });
 
 /* ===============================
@@ -49,7 +55,7 @@ router.get("/chamados/:id", function (req, res) {
       return res.status(404).send("Chamado não encontrado.");
     }
 
-    // ✅ garante estrutura mínima (evita quebrar o EJS)
+    // garante estrutura mínima
     if (!chamadoEncontrado.interacoes) chamadoEncontrado.interacoes = [];
     if (!chamadoEncontrado.anexos) chamadoEncontrado.anexos = [];
     if (!chamadoEncontrado.dataCriacao)

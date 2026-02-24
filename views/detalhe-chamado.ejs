@@ -48,13 +48,8 @@
     <div class="container-fluid">
         <div class="row">
 
-            <!-- MENU -->
-            <div class="col-md-2 sidebar p-3">
-                <h6 class="text-white">Menu</h6>
-                <a href="/"><i class="bi bi-speedometer2"></i> Dashboard</a>
-                <a href="/chamados"><i class="bi bi-ticket"></i> Chamados</a>
-                <a href="/novo-chamado"><i class="bi bi-plus-circle"></i> Novo Chamado</a>
-            </div>
+            <!-- ✅ MENU (partial) -->
+            <%- include("partials/sidebar") %>
 
             <!-- CONTEÚDO -->
             <div class="col-md-10 p-4">
@@ -68,23 +63,33 @@
                     </div>
                     <div class="card-body">
                         <div class="row mb-2">
+
                             <p style="margin-top:8px; font-size: 14px; color: #666;">
                                 <strong>Data de abertura:</strong>
                                 <%= new Date(chamado.dataCriacao).toLocaleString('pt-BR') %>
                             </p>
-                            <div class="col-md-3">
+
+                            <div class="col-md-2 mb-2">
                                 <strong>Status:</strong>
                                 <span class="badge bg-success"><%= chamado.status %></span>
                             </div>
-                            <div class="col-md-3">
+
+                            <div class="col-md-3 mb-2">
+                                <strong>Cliente:</strong>
+                                <%= chamado.cliente ? chamado.cliente : "—" %>
+                            </div>
+
+                            <div class="col-md-3 mb-2">
                                 <strong>Categoria:</strong>
                                 <%= chamado.categoria %>
                             </div>
-                            <div class="col-md-3">
+
+                            <div class="col-md-2 mb-2">
                                 <strong>Prioridade:</strong>
                                 <span class="badge bg-warning"><%= chamado.prioridade %></span>
                             </div>
-                            <div class="col-md-3">
+
+                            <div class="col-md-2 mb-2">
                                 <strong>Solicitante:</strong>
                                 <%= chamado.solicitante %>
                             </div>
