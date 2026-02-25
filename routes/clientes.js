@@ -34,6 +34,16 @@ function somenteAdmin(req, res, next) {
   next();
 }
 
+// Permite admin e analista
+function permitirRoles(...roles) {
+  return (req, res, next) => {
+    if (!req.usuario || !roles.includes(req.usuario.role)) {
+      return res.status(403).json({ error: "Acesso não autorizado" });
+    }
+    next();
+  };
+}
+
 /* ===============================
    ROTAS (PROTEGIDAS POR JWT)
 ================================= */
@@ -41,12 +51,29 @@ router.use(authJwt);
 
 /**
  * GET /
- * Lista clientes (admin)
+ * Lista clientes
+ * - admin: lista todos
+ * - analista: lista apenas ativos (para preencher select)
+ *
+ * Query opcional:
+ *   ?ativos=1  => retorna apenas ativos (bom pro select)
  */
-router.get("/", somenteAdmin, (req, res) => {
-  const clientes = lerClientes();
+router.get("/", permitirRoles("admin", "analista"), (req, res) => {
+  const role = req.usuario.role;
+  const somenteAtivos = String(req.query.ativos || "") === "1";
+
+  let clientes = lerClientes();
+
+  // Analista SEMPRE enxerga apenas ativos (segurança)
+  if (role === "analista") {
+    clientes = clientes.filter((c) => c.ativo === true);
+  } else if (role === "admin" && somenteAtivos) {
+    // Admin pode pedir só ativos também (útil no front)
+    clientes = clientes.filter((c) => c.ativo === true);
+  }
+
   clientes.sort((a, b) => Number(b.id) - Number(a.id));
-  res.json(clientes);
+  return res.json(clientes);
 });
 
 /**
@@ -82,8 +109,8 @@ router.post("/", somenteAdmin, (req, res) => {
   const novoCliente = {
     id: Date.now().toString(),
     nome: nomeTrim,
-    cnpj: String(cnpj).trim(),     // formato como digitado
-    cnpjDigits,                    // só números para comparação
+    cnpj: String(cnpj).trim(),
+    cnpjDigits,
     ativo: true,
     criadoEm: new Date().toISOString(),
   };
@@ -115,7 +142,6 @@ router.put("/:id", somenteAdmin, (req, res) => {
 
   const atual = clientes[idx];
 
-  // nome
   if (typeof nome === "string") {
     const nomeTrim = nome.trim();
     if (nomeTrim.length < 2) {
@@ -124,7 +150,6 @@ router.put("/:id", somenteAdmin, (req, res) => {
     atual.nome = nomeTrim;
   }
 
-  // cnpj
   if (typeof cnpj === "string") {
     const cnpjDigits = cnpj.replace(/\D/g, "");
     if (cnpjDigits.length !== 14) {
@@ -142,7 +167,6 @@ router.put("/:id", somenteAdmin, (req, res) => {
     atual.cnpjDigits = cnpjDigits;
   }
 
-  // ativo
   if (typeof ativo === "boolean") {
     atual.ativo = ativo;
   }

@@ -19,5 +19,19 @@
       }
     ],
     "anexos": []
+  },
+  {
+    "id": "1772020899851",
+    "titulo": "Configuração de máquina",
+    "cliente": "Nicoletti Advogados",
+    "categoria": "Novo usuário",
+    "descricao": "Realizando configuração de máquinas na Nicoletti.",
+    "prioridade": "Baixa",
+    "solicitante": "Juliana",
+    "status": "Aberto",
+    "dataCriacao": "2026-02-25T12:01:39.851Z",
+    "criadoPor": "Andressa Dubout",
+    "interacoes": [],
+    "anexos": []
   }
 ]
