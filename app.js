@@ -3,12 +3,16 @@ const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
-const clientesRouter = require("./routes/clientes");
 
+/* ======================
+   ROUTERS
+====================== */
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const authRouter = require("./routes/auth");
 const chamadosRouter = require("./routes/chamados");
+const clientesRouter = require("./routes/clientes");
+const categoriasRouter = require("./routes/categorias");
 
 const app = express();
 
@@ -28,13 +32,18 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 /* ======================
-   ROTAS
+   ROTAS API
 ====================== */
 app.use("/api/auth", authRouter);
 app.use("/api/chamados", chamadosRouter);
-app.use("/", indexRouter);
-app.use('/api/usuarios', usersRouter);
+app.use("/api/usuarios", usersRouter);
 app.use("/api/clientes", clientesRouter);
+app.use("/api/categorias", categoriasRouter);
+
+/* ======================
+   ROTAS PÁGINAS
+====================== */
+app.use("/", indexRouter);
 
 /* ======================
    404

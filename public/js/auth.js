@@ -78,10 +78,12 @@ async function verificarLogin() {
  * - Mostra itens ADMIN somente quando role === "admin"
  *   #menuUsuarios (Gestão de Usuários)
  *   #menuClientes (Gestão de Clientes)
+ *   #menuCategorias (Gestão de Categorias)
  */
 function aplicarPermissoesMenu(data) {
   const menuUsuarios = document.getElementById("menuUsuarios");
   const menuClientes = document.getElementById("menuClientes");
+  const menuCategorias = document.getElementById("menuCategorias");
 
   const isAdmin = data?.usuario?.role === "admin";
 
@@ -93,6 +95,11 @@ function aplicarPermissoesMenu(data) {
   if (menuClientes) {
     if (isAdmin) menuClientes.classList.remove("d-none");
     else menuClientes.classList.add("d-none");
+  }
+
+  if (menuCategorias) {
+    if (isAdmin) menuCategorias.classList.remove("d-none");
+    else menuCategorias.classList.add("d-none");
   }
 }
 

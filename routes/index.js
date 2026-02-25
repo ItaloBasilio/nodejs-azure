@@ -32,10 +32,18 @@ router.get("/usuarios", function (req, res) {
 });
 
 /* ===============================
-   ✅ NOVA ROTA: GESTÃO DE CLIENTES
+   ✅ GESTÃO DE CLIENTES
 ================================= */
 router.get("/clientes", function (req, res) {
   res.render("clientes");
+});
+
+/* ===============================
+   ✅ NOVA ROTA: GESTÃO DE CATEGORIAS
+   (arquivo: views/gestaoCategorias.ejs)
+================================= */
+router.get("/gestao-categorias", function (req, res) {
+  res.render("gestaoCategorias");
 });
 
 /* ===============================

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Service Desk - Categorias</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body { background-color: #f8f9fa; }
+
+    .sidebar { height: 100vh; background-color: #212529; }
+    .sidebar a {
+      color: #adb5bd;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+    }
+    .sidebar a:hover { background-color: #343a40; color: #fff; }
+    .sidebar .active { background-color: #343a40; color: #fff; }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/"><i class="bi bi-headset"></i> Service Desk</a>
+      <div class="d-flex">
+        <span id="userName" class="navbar-text text-white me-3">Bem-vindo</span>
+        <button id="logoutBtn" class="btn btn-outline-light btn-sm">Sair</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+
+      <!-- MENU -->
+      <%- include("partials/sidebar") %>
+
+      <!-- CONTEÚDO -->
+      <div class="col-md-10 p-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h3 class="m-0">Gestão de Categorias</h3>
+          <small class="text-muted">Acesso restrito: Admin</small>
+        </div>
+
+        <!-- ALERTAS -->
+        <div id="alertSuccess" class="alert alert-success d-none"></div>
+        <div id="alertError" class="alert alert-danger d-none"></div>
+
+        <!-- CARD CADASTRO -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-primary text-white">
+            Cadastrar Categoria
+          </div>
+          <div class="card-body">
+            <form id="formCategoria" class="row g-3" novalidate>
+              <div class="col-md-5">
+                <label class="form-label">Grupo</label>
+                <input type="text" class="form-control" id="grupo" placeholder="Ex: Acesso e Permissões" required>
+                <div class="invalid-feedback">Informe o grupo.</div>
+              </div>
+
+              <div class="col-md-5">
+                <label class="form-label">Nome da categoria</label>
+                <input type="text" class="form-control" id="nome" placeholder="Ex: Excluir usuário" required>
+                <div class="invalid-feedback">Informe o nome da categoria.</div>
+              </div>
+
+              <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-success w-100" type="submit">
+                  <i class="bi bi-plus-circle"></i> Salvar
+                </button>
+              </div>
+            </form>
+
+            <small class="text-muted d-block mt-2">
+              Exemplo: <strong>Acesso e Permissões</strong> &gt; <strong>Excluir usuário</strong>
+            </small>
+          </div>
+        </div>
+
+        <!-- LISTA -->
+        <div class="card shadow-sm">
+          <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <span>Categorias cadastradas</span>
+            <button class="btn btn-outline-light btn-sm" id="btnRecarregar">
+              <i class="bi bi-arrow-clockwise"></i> Recarregar
+            </button>
+          </div>
+
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>Grupo</th>
+                    <th>Categoria</th>
+                    <th>Status</th>
+                    <th style="width: 320px;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyCategorias">
+                  <tr>
+                    <td colspan="4" class="text-muted">Carregando...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <small class="text-muted">
+              Dica: você pode <strong>inativar</strong> uma categoria para ela não aparecer no “Novo Chamado”.
+            </small>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ MODAL EDITAR CATEGORIA -->
+  <div class="modal fade" id="modalEditarCategoria" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="formEditarCategoria" class="modal-content" novalidate>
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-pencil"></i> Editar Categoria</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="editId">
+
+          <div class="mb-3">
+            <label class="form-label">Grupo</label>
+            <input type="text" class="form-control" id="editGrupo" required>
+            <div class="invalid-feedback">Informe o grupo.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Categoria</label>
+            <input type="text" class="form-control" id="editNome" required>
+            <div class="invalid-feedback">Informe o nome da categoria.</div>
+          </div>
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="editAtiva">
+            <label class="form-check-label" for="editAtiva">Ativa</label>
+          </div>
+
+          <div id="editErro" class="text-danger mt-2" style="display:none;"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Salvar alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const API = "/api/categorias";
+    let modalEditar = null;
+
+    function marcarMenuAtivo() {
+      const path = window.location.pathname;
+      document.querySelectorAll(".sidebar a").forEach(a => {
+        if (a.getAttribute("href") === path) a.classList.add("active");
+      });
+    }
+
+    function showSuccess(msg) {
+      const el = document.getElementById("alertSuccess");
+      el.innerText = msg;
+      el.classList.remove("d-none");
+      setTimeout(() => el.classList.add("d-none"), 3000);
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("alertError");
+      el.innerText = msg;
+      el.classList.remove("d-none");
+      setTimeout(() => el.classList.add("d-none"), 4000);
+    }
+
+    function setInvalid(el, isInvalid) {
+      if (!el) return;
+      el.classList.toggle("is-invalid", !!isInvalid);
+    }
+
+    function limparInvalidAoDigitar(el) {
+      el.addEventListener("input", () => setInvalid(el, false));
+    }
+
+    function validarNaoVazio(grupoEl, nomeEl, modo = "cadastro") {
+      const g = (grupoEl.value || "").trim();
+      const n = (nomeEl.value || "").trim();
+
+      let ok = true;
+      if (!g) { setInvalid(grupoEl, true); ok = false; }
+      if (!n) { setInvalid(nomeEl, true); ok = false; }
+
+      if (!ok) {
+        if (modo === "cadastro") showError("Preencha Grupo e Categoria antes de salvar.");
+        if (modo === "edicao") {
+          const e = document.getElementById("editErro");
+          e.innerText = "Preencha Grupo e Categoria antes de salvar.";
+          e.style.display = "block";
+        }
+      }
+      return ok;
+    }
+
+    async function exigirAdmin() {
+      const ok = await verificarLogin();
+      if (!ok) return false;
+
+      const res = await authFetch("/api/auth/check");
+      const data = await res.json().catch(() => null);
+
+      if (data?.usuario?.role !== "admin") {
+        window.location.href = "/";
+        return false;
+      }
+      return true;
+    }
+
+    function abrirModalEditar(cat) {
+      document.getElementById("editId").value = cat.id;
+      document.getElementById("editGrupo").value = cat.grupo || "";
+      document.getElementById("editNome").value = cat.nome || "";
+      document.getElementById("editAtiva").checked = cat.ativa === true;
+
+      setInvalid(document.getElementById("editGrupo"), false);
+      setInvalid(document.getElementById("editNome"), false);
+
+      const e = document.getElementById("editErro");
+      e.style.display = "none";
+      e.innerText = "";
+
+      if (!modalEditar) modalEditar = new bootstrap.Modal(document.getElementById("modalEditarCategoria"));
+      modalEditar.show();
+    }
+
+    async function carregarCategorias() {
+      const tbody = document.getElementById("tbodyCategorias");
+
+      const res = await authFetch(API);
+      if (!res.ok) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-danger">Erro ao carregar categorias</td></tr>`;
+        return;
+      }
+
+      const categorias = await res.json().catch(() => []);
+
+      // ordena por grupo e nome
+      categorias.sort((a, b) => {
+        const g = (a.grupo || "").localeCompare((b.grupo || ""), "pt-BR");
+        if (g !== 0) return g;
+        return (a.nome || "").localeCompare((b.nome || ""), "pt-BR");
+      });
+
+      if (!categorias.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-muted">Nenhuma categoria cadastrada.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = "";
+      categorias.forEach(c => {
+        const ativa = c.ativa === true;
+
+        const payload = JSON.stringify({
+          id: c.id, grupo: c.grupo, nome: c.nome, ativa: ativa
+        }).replace(/'/g, "&apos;");
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${c.grupo}</td>
+            <td>${c.nome}</td>
+            <td>
+              <span class="badge ${ativa ? "bg-success" : "bg-secondary"}">
+                ${ativa ? "Ativa" : "Inativa"}
+              </span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-2"
+                onclick='abrirModalEditar(${payload})'>
+                <i class="bi bi-pencil"></i> Editar
+              </button>
+
+              <button class="btn btn-sm btn-outline-warning me-2"
+                onclick="toggleAtiva('${c.id}', ${ativa ? "false" : "true"})">
+                <i class="bi bi-toggle-${ativa ? "on" : "off"}"></i>
+                ${ativa ? "Inativar" : "Ativar"}
+              </button>
+
+              <button class="btn btn-sm btn-outline-danger"
+                onclick="deletarCategoria('${c.id}')">
+                <i class="bi bi-trash"></i> Deletar
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    async function deletarCategoria(id) {
+      if (!confirm("Deseja realmente deletar esta categoria?")) return;
+
+      const res = await authFetch(`${API}/${id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        showError(data?.error || "Erro ao deletar categoria");
+        return;
+      }
+
+      showSuccess("Categoria removida com sucesso");
+      carregarCategorias();
+    }
+
+    async function toggleAtiva(id, ativa) {
+      const res = await authFetch(`${API}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ativa })
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        showError(data?.error || "Erro ao atualizar status");
+        return;
+      }
+
+      carregarCategorias();
+    }
+
+    // cadastro
+    const grupoEl = document.getElementById("grupo");
+    const nomeEl = document.getElementById("nome");
+    limparInvalidAoDigitar(grupoEl);
+    limparInvalidAoDigitar(nomeEl);
+
+    document.getElementById("formCategoria").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (!validarNaoVazio(grupoEl, nomeEl, "cadastro")) return;
+
+      const grupo = grupoEl.value.trim();
+      const nome = nomeEl.value.trim();
+
+      const res = await authFetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ grupo, nome })
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        showError(data?.error || "Erro ao salvar categoria");
+        return;
+      }
+
+      showSuccess("Categoria cadastrada com sucesso");
+      document.getElementById("formCategoria").reset();
+      setInvalid(grupoEl, false);
+      setInvalid(nomeEl, false);
+      carregarCategorias();
+    });
+
+    // edição
+    const editGrupoEl = document.getElementById("editGrupo");
+    const editNomeEl = document.getElementById("editNome");
+    limparInvalidAoDigitar(editGrupoEl);
+    limparInvalidAoDigitar(editNomeEl);
+
+    document.getElementById("formEditarCategoria").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const id = document.getElementById("editId").value;
+      const ativa = document.getElementById("editAtiva").checked;
+
+      const err = document.getElementById("editErro");
+      err.style.display = "none";
+      err.innerText = "";
+
+      if (!validarNaoVazio(editGrupoEl, editNomeEl, "edicao")) return;
+
+      const grupo = editGrupoEl.value.trim();
+      const nome = editNomeEl.value.trim();
+
+      const res = await authFetch(`${API}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ grupo, nome, ativa })
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        err.innerText = data?.error || "Erro ao atualizar categoria";
+        err.style.display = "block";
+        return;
+      }
+
+      modalEditar?.hide();
+      showSuccess("Categoria atualizada com sucesso");
+      carregarCategorias();
+    });
+
+    document.getElementById("btnRecarregar").addEventListener("click", carregarCategorias);
+    document.getElementById("logoutBtn").onclick = logout;
+
+    async function iniciar() {
+      marcarMenuAtivo();
+
+      const ok = await exigirAdmin();
+      if (!ok) return;
+
+      await carregarUsuarioLogado();
+      await carregarCategorias();
+    }
+
+    iniciar();
+  </script>
+
+</body>
+</html>

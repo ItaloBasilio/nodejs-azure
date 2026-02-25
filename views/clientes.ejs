@@ -12,7 +12,6 @@
     <style>
         body { background-color: #f8f9fa; }
 
-        /* ✅ Mesmo CSS do sidebar das outras páginas */
         .sidebar { height: 100vh; background-color: #212529; }
         .sidebar a {
             color: #adb5bd;
@@ -64,15 +63,17 @@
                 Cadastrar Cliente
             </div>
             <div class="card-body">
-                <form id="formCliente" class="row g-3">
+                <form id="formCliente" class="row g-3" novalidate>
                     <div class="col-md-5">
                         <label class="form-label">Nome do Cliente</label>
                         <input type="text" class="form-control" id="nome" required>
+                        <div class="invalid-feedback">Informe o nome do cliente.</div>
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label">CNPJ</label>
                         <input type="text" class="form-control" id="cnpj" placeholder="00.000.000/0000-00" required>
+                        <div class="invalid-feedback">Informe o CNPJ.</div>
                     </div>
 
                     <div class="col-md-3 d-flex align-items-end">
@@ -114,11 +115,54 @@
 </div>
 </div>
 
+<!-- ✅ MODAL EDITAR CLIENTE -->
+<div class="modal fade" id="modalEditarCliente" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="formEditarCliente" class="modal-content" novalidate>
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-pencil"></i> Editar Cliente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="editClienteId">
+
+        <div class="mb-3">
+          <label class="form-label">Nome</label>
+          <input type="text" class="form-control" id="editClienteNome" required>
+          <div class="invalid-feedback">Informe o nome do cliente.</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">CNPJ</label>
+          <input type="text" class="form-control" id="editClienteCnpj" placeholder="00.000.000/0000-00" required>
+          <div class="invalid-feedback">Informe o CNPJ.</div>
+        </div>
+
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="editClienteAtivo">
+          <label class="form-check-label" for="editClienteAtivo">Ativo</label>
+        </div>
+
+        <div id="editClienteErro" class="text-danger mt-2" style="display:none;"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-save"></i> Salvar alterações
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script src="/js/auth.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 const API = "/api/clientes";
+let modalEditar = null;
 
 /* ✅ marca o item atual no menu */
 function marcarMenuAtivo() {
@@ -142,18 +186,68 @@ function showError(msg) {
     setTimeout(() => el.classList.add("d-none"), 4000);
 }
 
+function setInvalid(inputEl, isInvalid) {
+    if (!inputEl) return;
+    inputEl.classList.toggle("is-invalid", !!isInvalid);
+}
+
+function limparInvalidAoDigitar(inputEl) {
+    inputEl.addEventListener("input", () => setInvalid(inputEl, false));
+}
+
+function validarNaoVazio(nomeEl, cnpjEl, modo = "cadastro") {
+    const nome = (nomeEl.value || "").trim();
+    const cnpj = (cnpjEl.value || "").trim();
+
+    let ok = true;
+
+    if (!nome) { setInvalid(nomeEl, true); ok = false; }
+    if (!cnpj) { setInvalid(cnpjEl, true); ok = false; }
+
+    if (!ok) {
+        if (modo === "cadastro") showError("Preencha Nome e CNPJ antes de salvar.");
+        if (modo === "edicao") {
+            const erro = document.getElementById("editClienteErro");
+            erro.innerText = "Preencha Nome e CNPJ antes de salvar.";
+            erro.style.display = "block";
+        }
+    }
+
+    return ok;
+}
+
 async function exigirAdmin() {
     const ok = await verificarLogin();
     if (!ok) return false;
 
     const res = await authFetch("/api/auth/check");
-    const data = await res.json();
+    const data = await res.json().catch(() => null);
 
     if (data?.usuario?.role !== "admin") {
         window.location.href = "/";
         return false;
     }
     return true;
+}
+
+function abrirModalEditar(cliente) {
+    document.getElementById("editClienteId").value = cliente.id;
+    document.getElementById("editClienteNome").value = cliente.nome || "";
+    document.getElementById("editClienteCnpj").value = cliente.cnpj || "";
+    document.getElementById("editClienteAtivo").checked = cliente.ativo !== false;
+
+    // limpa estados de erro
+    setInvalid(document.getElementById("editClienteNome"), false);
+    setInvalid(document.getElementById("editClienteCnpj"), false);
+
+    const erro = document.getElementById("editClienteErro");
+    erro.style.display = "none";
+    erro.innerText = "";
+
+    if (!modalEditar) {
+        modalEditar = new bootstrap.Modal(document.getElementById("modalEditarCliente"));
+    }
+    modalEditar.show();
 }
 
 async function carregarClientes() {
@@ -167,7 +261,6 @@ async function carregarClientes() {
 
     const clientes = await res.json().catch(() => []);
 
-    // ✅ ORDENA A -> Z PELO NOME (pt-BR)
     clientes.sort((a, b) => (a.nome || "").localeCompare((b.nome || ""), "pt-BR"));
 
     if (!clientes.length) {
@@ -177,16 +270,27 @@ async function carregarClientes() {
 
     tbody.innerHTML = "";
     clientes.forEach(c => {
+        const ativo = c.ativo !== false;
+
+        const payload = JSON.stringify({
+            id: c.id, nome: c.nome, cnpj: c.cnpj, ativo: ativo
+        }).replace(/'/g, "&apos;");
+
         tbody.innerHTML += `
         <tr>
             <td>${c.nome}</td>
             <td>${c.cnpj}</td>
             <td>
-                <span class="badge ${c.ativo ? "bg-success" : "bg-secondary"}">
-                    ${c.ativo ? "Ativo" : "Inativo"}
+                <span class="badge ${ativo ? "bg-success" : "bg-secondary"}">
+                    ${ativo ? "Ativo" : "Inativo"}
                 </span>
             </td>
             <td>
+                <button class="btn btn-sm btn-outline-primary me-2"
+                    onclick='abrirModalEditar(${payload})'>
+                    <i class="bi bi-pencil"></i> Editar
+                </button>
+
                 <button class="btn btn-sm btn-outline-danger"
                     onclick="deletarCliente('${c.id}')">
                     <i class="bi bi-trash"></i> Deletar
@@ -211,11 +315,19 @@ async function deletarCliente(id) {
     carregarClientes();
 }
 
+/* ✅ CADASTRO */
+const nomeEl = document.getElementById("nome");
+const cnpjEl = document.getElementById("cnpj");
+limparInvalidAoDigitar(nomeEl);
+limparInvalidAoDigitar(cnpjEl);
+
 document.getElementById("formCliente").addEventListener("submit", async e => {
     e.preventDefault();
 
-    const nome = document.getElementById("nome").value.trim();
-    const cnpj = document.getElementById("cnpj").value.trim();
+    if (!validarNaoVazio(nomeEl, cnpjEl, "cadastro")) return;
+
+    const nome = nomeEl.value.trim();
+    const cnpj = cnpjEl.value.trim();
 
     const res = await authFetch(API, {
         method: "POST",
@@ -231,6 +343,49 @@ document.getElementById("formCliente").addEventListener("submit", async e => {
 
     showSuccess("Cliente cadastrado com sucesso");
     document.getElementById("formCliente").reset();
+    setInvalid(nomeEl, false);
+    setInvalid(cnpjEl, false);
+    carregarClientes();
+});
+
+/* ✅ EDIÇÃO (PUT) */
+const editNomeEl = document.getElementById("editClienteNome");
+const editCnpjEl = document.getElementById("editClienteCnpj");
+limparInvalidAoDigitar(editNomeEl);
+limparInvalidAoDigitar(editCnpjEl);
+
+document.getElementById("formEditarCliente").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const id = document.getElementById("editClienteId").value;
+    const ativo = document.getElementById("editClienteAtivo").checked;
+
+    const erro = document.getElementById("editClienteErro");
+    erro.style.display = "none";
+    erro.innerText = "";
+
+    if (!validarNaoVazio(editNomeEl, editCnpjEl, "edicao")) return;
+
+    const nome = editNomeEl.value.trim();
+    const cnpj = editCnpjEl.value.trim();
+
+    const res = await authFetch(`${API}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, cnpj, ativo })
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok) {
+        const msg = data?.error || "Erro ao atualizar cliente";
+        erro.innerText = msg;
+        erro.style.display = "block";
+        return;
+    }
+
+    modalEditar?.hide();
+    showSuccess("Cliente atualizado com sucesso");
     carregarClientes();
 });
 

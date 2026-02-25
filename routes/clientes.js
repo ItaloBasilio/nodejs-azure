@@ -25,6 +25,16 @@ function salvarClientes(clientes) {
   fs.writeFileSync(clientesPath, JSON.stringify(clientes, null, 2));
 }
 
+/**
+ * Sempre formata CNPJ como: 00.000.000/0000-00
+ * Recebe string com ou sem máscara.
+ */
+function formatarCnpj(valor) {
+  const d = String(valor || "").replace(/\D/g, "");
+  if (d.length !== 14) return String(valor || "").trim();
+  return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12, 14)}`;
+}
+
 function somenteAdmin(req, res, next) {
   if (!req.usuario || req.usuario.role !== "admin") {
     return res.status(403).json({
@@ -80,6 +90,9 @@ router.get("/", permitirRoles("admin", "analista"), (req, res) => {
  * POST /
  * Cria cliente (admin)
  * body: { nome, cnpj }
+ *
+ * ✅ Salva SEMPRE o campo "cnpj" formatado no JSON,
+ * mesmo que o usuário digite só números.
  */
 router.post("/", somenteAdmin, (req, res) => {
   const { nome, cnpj } = req.body;
@@ -109,8 +122,8 @@ router.post("/", somenteAdmin, (req, res) => {
   const novoCliente = {
     id: Date.now().toString(),
     nome: nomeTrim,
-    cnpj: String(cnpj).trim(),
-    cnpjDigits,
+    cnpj: formatarCnpj(cnpjDigits), // ✅ sempre formatado
+    cnpjDigits,                     // ✅ sempre só números
     ativo: true,
     criadoEm: new Date().toISOString(),
   };
@@ -128,6 +141,8 @@ router.post("/", somenteAdmin, (req, res) => {
  * PUT /:id
  * Atualiza cliente (admin)
  * body: { nome?, cnpj?, ativo? }
+ *
+ * ✅ Se atualizar CNPJ, salva SEMPRE formatado no JSON.
  */
 router.put("/:id", somenteAdmin, (req, res) => {
   const { id } = req.params;
@@ -142,6 +157,7 @@ router.put("/:id", somenteAdmin, (req, res) => {
 
   const atual = clientes[idx];
 
+  // nome
   if (typeof nome === "string") {
     const nomeTrim = nome.trim();
     if (nomeTrim.length < 2) {
@@ -150,6 +166,7 @@ router.put("/:id", somenteAdmin, (req, res) => {
     atual.nome = nomeTrim;
   }
 
+  // cnpj
   if (typeof cnpj === "string") {
     const cnpjDigits = cnpj.replace(/\D/g, "");
     if (cnpjDigits.length !== 14) {
@@ -163,10 +180,11 @@ router.put("/:id", somenteAdmin, (req, res) => {
       return res.status(400).json({ error: "Já existe outro cliente com esse CNPJ" });
     }
 
-    atual.cnpj = cnpj.trim();
-    atual.cnpjDigits = cnpjDigits;
+    atual.cnpj = formatarCnpj(cnpjDigits); // ✅ sempre formatado
+    atual.cnpjDigits = cnpjDigits;         // ✅ só números
   }
 
+  // ativo
   if (typeof ativo === "boolean") {
     atual.ativo = ativo;
   }

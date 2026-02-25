@@ -11,31 +11,17 @@
     <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
 
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
+        body { background-color: #f8f9fa; }
 
-        .sidebar {
-            height: 100vh;
-            background-color: #212529;
-        }
-
+        .sidebar { height: 100vh; background-color: #212529; }
         .sidebar a {
             color: #adb5bd;
             text-decoration: none;
             display: block;
             padding: 10px;
         }
-
-        .sidebar a:hover {
-            background-color: #343a40;
-            color: #fff;
-        }
-
-        .sidebar .active {
-            background-color: #343a40;
-            color: #fff;
-        }
+        .sidebar a:hover { background-color: #343a40; color: #fff; }
+        .sidebar .active { background-color: #343a40; color: #fff; }
     </style>
 </head>
 
@@ -57,149 +43,88 @@
             <!-- ✅ MENU (partial) -->
             <%- include("partials/sidebar") %>
 
-                <div class="col-md-10 p-4">
+            <div class="col-md-10 p-4">
 
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-primary text-white">
-                            Abrir Novo Chamado
-                        </div>
-
-                        <div class="card-body">
-
-                            <form id="formChamado" enctype="multipart/form-data">
-
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Título</label>
-                                        <input type="text" name="titulo" class="form-control" required>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Categoria</label>
-
-                                        <select id="categoriaSelect" name="categoria" class="form-select">
-
-                                            <optgroup label="Acesso e Permissões">
-                                                <option>Reset de senha</option>
-                                                <option>Usuário bloqueado</option>
-                                                <option>Permissões de pasta</option>
-                                            </optgroup>
-
-                                            <optgroup label="Automação / Integrações">
-                                                <option>Erro em integração</option>
-                                                <option>Automação não executa</option>
-                                            </optgroup>
-
-                                            <optgroup label="E-commerce / Site">
-                                                <option>Produto não aparece</option>
-                                                <option>Erro no checkout</option>
-                                            </optgroup>
-
-                                            <optgroup label="Email Corporativo">
-                                                <option>Não envia</option>
-                                                <option>Não recebe</option>
-                                                <option>Configuração Outlook</option>
-                                            </optgroup>
-
-                                            <optgroup label="Impressoras e Periféricos">
-                                                <option>Não imprime</option>
-                                                <option>Scanner não funciona</option>
-                                            </optgroup>
-
-                                            <optgroup label="Incidente Crítico">
-                                                <option>Sistema fora do ar</option>
-                                                <option>Internet da empresa caiu</option>
-                                            </optgroup>
-
-                                            <optgroup label="Rede / Internet">
-                                                <option>Wi-Fi não conecta</option>
-                                                <option>Rede lenta</option>
-                                            </optgroup>
-
-                                            <optgroup label="Relatórios/BI">
-                                                <option>Relatório não carrega</option>
-                                                <option>Dados divergentes</option>
-                                            </optgroup>
-
-                                            <optgroup label="Segurança da Informação">
-                                                <option>Vírus</option>
-                                                <option>Phishing</option>
-                                            </optgroup>
-
-                                            <optgroup label="Sistemas Internos">
-                                                <option>Erro no sistema</option>
-                                                <option>Não acessa ERP</option>
-                                            </optgroup>
-
-                                            <optgroup label="Solicitação de Serviço">
-                                                <option>Novo usuário</option>
-                                                <option>Instalação de software</option>
-                                            </optgroup>
-
-                                            <optgroup label="Suporte Técnico">
-                                                <option>PC lento</option>
-                                                <option>Computador travando</option>
-                                            </optgroup>
-
-                                        </select>
-
-                                    </div>
-                                </div>
-
-                                <!-- ✅ CLIENTE (DINÂMICO) -->
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Cliente</label>
-                                        <select id="clienteSelect" name="cliente" class="form-select" required>
-                                            <option value="" selected disabled>Carregando clientes...</option>
-                                        </select>
-                                        <small class="text-muted">
-                                            Se não aparecer nenhum cliente, cadastre em <strong>Gestão de
-                                                Clientes</strong>.
-                                        </small>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">Descrição</label>
-                                    <textarea name="descricao" class="form-control" rows="4" required></textarea>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Prioridade</label>
-                                        <select name="prioridade" class="form-select">
-                                            <option>Baixa</option>
-                                            <option>Média</option>
-                                            <option>Alta</option>
-                                            <option>Crítica</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Solicitante</label>
-                                        <input type="text" name="solicitante" class="form-control" required>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">Anexar Evidências (Imagens ou PDF)</label>
-                                    <input type="file" name="anexos" class="form-control" accept=".jpg,.jpeg,.png,.pdf"
-                                        multiple>
-                                    <small class="text-muted">
-                                        Formatos aceitos: JPG, PNG, PDF (máx 5MB cada, até 5 arquivos)
-                                    </small>
-                                </div>
-
-                                <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-send"></i> Abrir Chamado
-                                </button>
-
-                            </form>
-                        </div>
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        Abrir Novo Chamado
                     </div>
 
+                    <div class="card-body">
+
+                        <form id="formChamado" enctype="multipart/form-data">
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Título</label>
+                                    <input type="text" name="titulo" class="form-control" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Categoria</label>
+
+                                    <select id="categoriaSelect" name="categoria" class="form-select" required>
+                                        <option value="" selected disabled>Carregando categorias...</option>
+                                    </select>
+
+                                    <small class="text-muted">
+                                        Se não aparecer nenhuma categoria, cadastre em <strong>Gestão de Categorias</strong>.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- ✅ CLIENTE (DINÂMICO) -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Cliente</label>
+                                    <select id="clienteSelect" name="cliente" class="form-select" required>
+                                        <option value="" selected disabled>Carregando clientes...</option>
+                                    </select>
+                                    <small class="text-muted">
+                                        Se não aparecer nenhum cliente, cadastre em <strong>Gestão de Clientes</strong>.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Descrição</label>
+                                <textarea name="descricao" class="form-control" rows="4" required></textarea>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Prioridade</label>
+                                    <select name="prioridade" class="form-select">
+                                        <option>Baixa</option>
+                                        <option>Média</option>
+                                        <option>Alta</option>
+                                        <option>Crítica</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Solicitante</label>
+                                    <input type="text" name="solicitante" class="form-control" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Anexar Evidências (Imagens ou PDF)</label>
+                                <input type="file" name="anexos" class="form-control" accept=".jpg,.jpeg,.png,.pdf" multiple>
+                                <small class="text-muted">
+                                    Formatos aceitos: JPG, PNG, PDF (máx 5MB cada, até 5 arquivos)
+                                </small>
+                            </div>
+
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-send"></i> Abrir Chamado
+                            </button>
+
+                        </form>
+                    </div>
                 </div>
+
+            </div>
         </div>
     </div>
 
@@ -209,11 +134,12 @@
     <script src="/js/auth.js"></script>
 
     <script>
-        const API_CLIENTES = "/api/clientes";
+        const API_CLIENTES = "/api/clientes?ativos=1";
+        const API_CATEGORIAS = "/api/categorias?ativas=1";
+
         let tomCategoria = null;
         let tomCliente = null;
 
-        // ✅ marca o item atual no menu
         function marcarMenuAtivo() {
             const path = window.location.pathname;
             document.querySelectorAll(".sidebar a").forEach(a => {
@@ -240,17 +166,75 @@
         }
 
         function initTomSelects() {
-            // categoria
             tomCategoria = new TomSelect("#categoriaSelect", {
                 create: false,
                 placeholder: "Selecione ou digite para buscar..."
             });
 
-            // cliente (vai ser populado via API)
             tomCliente = new TomSelect("#clienteSelect", {
                 create: false,
                 placeholder: "Selecione o cliente..."
             });
+        }
+
+        async function carregarCategorias() {
+            const select = document.getElementById("categoriaSelect");
+
+            try {
+                const res = await authFetch(API_CATEGORIAS);
+
+                if (!res.ok) {
+                    select.innerHTML = `<option value="" disabled selected>Erro ao carregar categorias</option>`;
+                    if (tomCategoria) tomCategoria.sync();
+                    return;
+                }
+
+                const categorias = await res.json().catch(() => []);
+
+                // Agrupa por grupo
+                const mapa = new Map();
+                (categorias || [])
+                    .filter(c => c.ativa === true)
+                    .forEach(c => {
+                        const grupo = (c.grupo || "Outros").trim();
+                        if (!mapa.has(grupo)) mapa.set(grupo, []);
+                        mapa.get(grupo).push(c);
+                    });
+
+                const grupos = Array.from(mapa.keys()).sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+                if (!grupos.length) {
+                    select.innerHTML = `<option value="" disabled selected>Nenhuma categoria cadastrada</option>`;
+                    if (tomCategoria) tomCategoria.sync();
+                    return;
+                }
+
+                select.innerHTML = `<option value="" disabled selected>Selecione a categoria</option>`;
+
+                grupos.forEach(grupo => {
+                    const optgroup = document.createElement("optgroup");
+                    optgroup.label = grupo;
+
+                    const itens = (mapa.get(grupo) || [])
+                        .sort((a, b) => (a.nome || "").localeCompare((b.nome || ""), "pt-BR"));
+
+                    itens.forEach(item => {
+                        const opt = document.createElement("option");
+                        // ✅ valor vai pro chamado como "Grupo > Nome"
+                        opt.value = `${grupo} > ${item.nome}`;
+                        opt.textContent = item.nome;
+                        optgroup.appendChild(opt);
+                    });
+
+                    select.appendChild(optgroup);
+                });
+
+                if (tomCategoria) tomCategoria.sync();
+            } catch (err) {
+                console.error("Erro ao carregar categorias:", err);
+                select.innerHTML = `<option value="" disabled selected>Erro ao carregar categorias</option>`;
+                if (tomCategoria) tomCategoria.sync();
+            }
         }
 
         async function carregarClientes() {
@@ -267,10 +251,9 @@
 
                 const clientes = await res.json().catch(() => []);
 
-                // somente ativos
                 const ativos = (clientes || [])
-                    .filter(c => c.ativo !== false)
-                    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+                    .filter(c => c.ativo === true)
+                    .sort((a, b) => (a.nome || "").localeCompare((b.nome || ""), "pt-BR"));
 
                 if (!ativos.length) {
                     select.innerHTML = `<option value="" disabled selected>Nenhum cliente cadastrado</option>`;
@@ -278,16 +261,14 @@
                     return;
                 }
 
-                // options
                 select.innerHTML = `<option value="" disabled selected>Selecione o cliente</option>`;
                 ativos.forEach(c => {
                     const opt = document.createElement("option");
-                    opt.value = c.nome; // salvando nome no chamado (simples)
+                    opt.value = c.nome; // mantém seu padrão atual
                     opt.textContent = `${c.nome} (${c.cnpj})`;
                     select.appendChild(opt);
                 });
 
-                // atualiza TomSelect
                 if (tomCliente) tomCliente.sync();
             } catch (err) {
                 console.error("Erro ao carregar clientes:", err);
@@ -324,9 +305,10 @@
             const ok = await verificarLoginLocal();
             if (!ok) return;
 
-            await carregarUsuarioLogado(); // ✅ libera o menu admin no sidebar
+            await carregarUsuarioLogado();
 
             initTomSelects();
+            await carregarCategorias();
             await carregarClientes();
         }
 
@@ -334,5 +316,4 @@
     </script>
 
 </body>
-
 </html>
