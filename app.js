@@ -13,6 +13,7 @@ const authRouter = require("./routes/auth");
 const chamadosRouter = require("./routes/chamados");
 const clientesRouter = require("./routes/clientes");
 const categoriasRouter = require("./routes/categorias");
+const gruposRouter = require("./routes/grupos");
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use("/api/chamados", chamadosRouter);
 app.use("/api/usuarios", usersRouter);
 app.use("/api/clientes", clientesRouter);
 app.use("/api/categorias", categoriasRouter);
+app.use("/api/grupos", gruposRouter);
 
 /* ======================
    ROTAS PÁGINAS

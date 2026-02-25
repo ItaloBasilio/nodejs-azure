@@ -12,5 +12,12 @@
     "usuario": "italo",
     "senha": "1",
     "role": "analista"
+  },
+  {
+    "id": 1772050070732,
+    "nome": "Ricardo",
+    "usuario": "ricardo",
+    "senha": "1",
+    "role": "analista"
   }
 ]

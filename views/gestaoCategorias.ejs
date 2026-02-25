@@ -63,8 +63,13 @@
             <form id="formCategoria" class="row g-3" novalidate>
               <div class="col-md-5">
                 <label class="form-label">Grupo</label>
-                <input type="text" class="form-control" id="grupo" placeholder="Ex: Acesso e Permissões" required>
+                <select class="form-select" id="grupo" required>
+                  <option value="" selected disabled>Carregando grupos...</option>
+                </select>
                 <div class="invalid-feedback">Informe o grupo.</div>
+                <small class="text-muted d-block mt-1">
+                  Não achou o grupo? <a href="/gestao-grupos">Cadastrar em Gestão de Grupos</a>.
+                </small>
               </div>
 
               <div class="col-md-5">
@@ -138,7 +143,9 @@
 
           <div class="mb-3">
             <label class="form-label">Grupo</label>
-            <input type="text" class="form-control" id="editGrupo" required>
+            <select class="form-select" id="editGrupo" required>
+              <option value="" selected disabled>Carregando grupos...</option>
+            </select>
             <div class="invalid-feedback">Informe o grupo.</div>
           </div>
 
@@ -171,6 +178,7 @@
 
   <script>
     const API = "/api/categorias";
+    const API_GRUPOS = "/api/grupos?ativos=1";
     let modalEditar = null;
 
     function marcarMenuAtivo() {
@@ -201,6 +209,7 @@
 
     function limparInvalidAoDigitar(el) {
       el.addEventListener("input", () => setInvalid(el, false));
+      el.addEventListener("change", () => setInvalid(el, false));
     }
 
     function validarNaoVazio(grupoEl, nomeEl, modo = "cadastro") {
@@ -236,11 +245,65 @@
       return true;
     }
 
-    function abrirModalEditar(cat) {
+    // ✅ Carrega grupos (ativos) e preenche os SELECTs em ordem alfabética
+    async function carregarGruposSelects(valorEdicaoSelecionado = "") {
+      const selectCadastro = document.getElementById("grupo");
+      const selectEdicao = document.getElementById("editGrupo");
+
+      const preencher = (selectEl, grupos, selecionado = "") => {
+        if (!selectEl) return;
+
+        if (!grupos.length) {
+          selectEl.innerHTML = `<option value="" selected disabled>Nenhum grupo cadastrado</option>`;
+          return;
+        }
+
+        selectEl.innerHTML = `<option value="" disabled ${!selecionado ? "selected" : ""}>Selecione o grupo</option>`;
+
+        grupos.forEach((g) => {
+          const opt = document.createElement("option");
+          opt.value = g.nome;
+          opt.textContent = g.nome;
+          if (selecionado && selecionado === g.nome) opt.selected = true;
+          selectEl.appendChild(opt);
+        });
+      };
+
+      try {
+        const res = await authFetch(API_GRUPOS);
+        if (!res.ok) {
+          if (selectCadastro) selectCadastro.innerHTML = `<option value="" selected disabled>Erro ao carregar grupos</option>`;
+          if (selectEdicao) selectEdicao.innerHTML = `<option value="" selected disabled>Erro ao carregar grupos</option>`;
+          return;
+        }
+
+        const grupos = await res.json().catch(() => []);
+        const lista = (grupos || [])
+          .filter(g => g.ativo === true)
+          .map(g => ({ nome: (g.nome || "").trim() }))
+          .filter(g => g.nome.length)
+          .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+
+        // cadastro: sem seleção
+        preencher(selectCadastro, lista);
+
+        // edição: mantém selecionado
+        const selecionadoEdicao = (valorEdicaoSelecionado || selectEdicao?.value || "").trim();
+        preencher(selectEdicao, lista, selecionadoEdicao);
+
+      } catch (e) {
+        if (selectCadastro) selectCadastro.innerHTML = `<option value="" selected disabled>Erro ao carregar grupos</option>`;
+        if (selectEdicao) selectEdicao.innerHTML = `<option value="" selected disabled>Erro ao carregar grupos</option>`;
+      }
+    }
+
+    async function abrirModalEditar(cat) {
       document.getElementById("editId").value = cat.id;
-      document.getElementById("editGrupo").value = cat.grupo || "";
       document.getElementById("editNome").value = cat.nome || "";
       document.getElementById("editAtiva").checked = cat.ativa === true;
+
+      // ✅ garante que os grupos foram carregados e seleciona o grupo do item
+      await carregarGruposSelects(cat.grupo || "");
 
       setInvalid(document.getElementById("editGrupo"), false);
       setInvalid(document.getElementById("editNome"), false);
@@ -264,7 +327,6 @@
 
       const categorias = await res.json().catch(() => []);
 
-      // ordena por grupo e nome
       categorias.sort((a, b) => {
         const g = (a.grupo || "").localeCompare((b.grupo || ""), "pt-BR");
         if (g !== 0) return g;
@@ -376,7 +438,8 @@
       document.getElementById("formCategoria").reset();
       setInvalid(grupoEl, false);
       setInvalid(nomeEl, false);
-      carregarCategorias();
+      await carregarCategorias();
+      await carregarGruposSelects(); // ✅ atualiza o select
     });
 
     // edição
@@ -415,10 +478,15 @@
 
       modalEditar?.hide();
       showSuccess("Categoria atualizada com sucesso");
-      carregarCategorias();
+      await carregarCategorias();
+      await carregarGruposSelects();
     });
 
-    document.getElementById("btnRecarregar").addEventListener("click", carregarCategorias);
+    document.getElementById("btnRecarregar").addEventListener("click", async () => {
+      await carregarCategorias();
+      await carregarGruposSelects();
+    });
+
     document.getElementById("logoutBtn").onclick = logout;
 
     async function iniciar() {
@@ -428,6 +496,7 @@
       if (!ok) return;
 
       await carregarUsuarioLogado();
+      await carregarGruposSelects(); // ✅ carrega lista no select
       await carregarCategorias();
     }
 

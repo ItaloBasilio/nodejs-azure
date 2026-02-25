@@ -79,11 +79,13 @@ async function verificarLogin() {
  *   #menuUsuarios (Gestão de Usuários)
  *   #menuClientes (Gestão de Clientes)
  *   #menuCategorias (Gestão de Categorias)
+ *   #menuGrupos (Gestão de Grupos)
  */
 function aplicarPermissoesMenu(data) {
   const menuUsuarios = document.getElementById("menuUsuarios");
   const menuClientes = document.getElementById("menuClientes");
   const menuCategorias = document.getElementById("menuCategorias");
+  const menuGrupos = document.getElementById("menuGrupos");
 
   const isAdmin = data?.usuario?.role === "admin";
 
@@ -100,6 +102,11 @@ function aplicarPermissoesMenu(data) {
   if (menuCategorias) {
     if (isAdmin) menuCategorias.classList.remove("d-none");
     else menuCategorias.classList.add("d-none");
+  }
+
+  if (menuGrupos) {
+    if (isAdmin) menuGrupos.classList.remove("d-none");
+    else menuGrupos.classList.add("d-none");
   }
 }
 

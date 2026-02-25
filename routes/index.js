@@ -39,11 +39,17 @@ router.get("/clientes", function (req, res) {
 });
 
 /* ===============================
-   ✅ NOVA ROTA: GESTÃO DE CATEGORIAS
-   (arquivo: views/gestaoCategorias.ejs)
+   ✅ GESTÃO DE CATEGORIAS
 ================================= */
 router.get("/gestao-categorias", function (req, res) {
   res.render("gestaoCategorias");
+});
+
+/* ===============================
+   ✅ NOVA ROTA: GESTÃO DE GRUPOS
+================================= */
+router.get("/gestao-grupos", function (req, res) {
+  res.render("gestaoGrupos");
 });
 
 /* ===============================
@@ -63,7 +69,6 @@ router.get("/chamados/:id", function (req, res) {
       return res.status(404).send("Chamado não encontrado.");
     }
 
-    // garante estrutura mínima
     if (!chamadoEncontrado.interacoes) chamadoEncontrado.interacoes = [];
     if (!chamadoEncontrado.anexos) chamadoEncontrado.anexos = [];
     if (!chamadoEncontrado.dataCriacao)

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "1772048527126",
+    "nome": "Acesso e Permissões",
+    "key": "acesso-e-permissoes",
+    "ativo": true,
+    "criadoEm": "2026-02-25T19:42:07.126Z",
+    "atualizadoEm": "2026-02-25T19:58:53.040Z"
+  },
+  {
+    "id": "1772049835809",
+    "nome": "Arquivos e Backup",
+    "key": "arquivos-e-backup",
+    "ativo": true,
+    "criadoEm": "2026-02-25T20:03:55.809Z"
+  },
+  {
+    "id": "1772050200414",
+    "nome": "Dispositivos Móveis",
+    "key": "dispositivos-moveis",
+    "ativo": true,
+    "criadoEm": "2026-02-25T20:10:00.414Z",
+    "atualizadoEm": "2026-02-25T20:10:04.883Z"
+  },
+  {
+    "id": "1772050775966",
+    "nome": "E-mail e Colaboração",
+    "key": "e-mail-e-colaboracao",
+    "ativo": true,
+    "criadoEm": "2026-02-25T20:19:35.966Z"
+  },
+  {
+    "id": "1772050781795",
+    "nome": "Impressão e Dispositivos",
+    "key": "impressao-e-dispositivos",
+    "ativo": true,
+    "criadoEm": "2026-02-25T20:19:41.795Z"
+  },
+  {
+    "id": "1772050787968",
+    "nome": "Rede e Conectividade",
+    "key": "rede-e-conectividade",
+    "ativo": true,
+    "criadoEm": "2026-02-25T20:19:47.968Z"
+  },
+  {
+    "id": "1772050797739",
+    "nome": "Segurança da Informação",
+    "key": "seguranca-da-informacao",
+    "ativo": true,
+    "criadoEm": "2026-02-25T20:19:57.739Z"
+  },
+  {
+    "id": "1772050805200",
+    "nome": "Sistemas e Aplicações",
+    "key": "sistemas-e-aplicacoes",
+    "ativo": true,
+    "criadoEm": "2026-02-25T20:20:05.200Z"
+  },
+  {
+    "id": "1772050812251",
+    "nome": "Solicitações e Melhorias",
+    "key": "solicitacoes-e-melhorias",
+    "ativo": true,
+    "criadoEm": "2026-02-25T20:20:12.251Z"
+  },
+  {
+    "id": "1772050819906",
+    "nome": "Suporte Técnico",
+    "key": "suporte-tecnico",
+    "ativo": true,
+    "criadoEm": "2026-02-25T20:20:19.906Z"
+  }
+]

@@ -16,9 +16,23 @@
         "autor": "Admin",
         "role": "admin",
         "mensagem": "Instalado o winrar na maquina da usuaria e extraido os arquivos da pasta. Resolvido."
+      },
+      {
+        "data": "2026-02-25T20:05:23.973Z",
+        "autor": "Admin",
+        "role": "admin",
+        "mensagem": "Teste de interação"
       }
     ],
-    "anexos": []
+    "anexos": [
+      {
+        "nomeOriginal": "DB.jpeg",
+        "nomeSalvo": "1772049911677-104215721.jpeg",
+        "caminho": "/uploads/1772049911677-104215721.jpeg",
+        "dataUpload": "2026-02-25T20:05:11.684Z",
+        "enviadoPor": "Admin"
+      }
+    ]
   },
   {
     "id": "1772020899851",
@@ -28,10 +42,68 @@
     "descricao": "Realizando configuração de máquinas na Nicoletti.",
     "prioridade": "Baixa",
     "solicitante": "Juliana",
-    "status": "Aberto",
+    "status": "Em Atendimento",
     "dataCriacao": "2026-02-25T12:01:39.851Z",
     "criadoPor": "Andressa Dubout",
-    "interacoes": [],
+    "interacoes": [
+      {
+        "data": "2026-02-25T20:14:13.651Z",
+        "autor": "Ricardo",
+        "role": "analista",
+        "mensagem": "Estou no local atuando nas máquinas."
+      }
+    ],
     "anexos": []
+  },
+  {
+    "id": "1772050016648",
+    "titulo": "Problemas com Backup",
+    "cliente": "Nicoletti Advogados",
+    "categoria": "Arquivos e Backup > Arquivos perdidos",
+    "descricao": "Estou com problemas no meu backup. Nao encontro alguns arquivos",
+    "prioridade": "Alta",
+    "solicitante": "Ricardo",
+    "status": "Em Atendimento",
+    "dataCriacao": "2026-02-25T20:06:56.648Z",
+    "criadoPor": "Admin",
+    "interacoes": [
+      {
+        "data": "2026-02-25T20:11:20.886Z",
+        "autor": "Ricardo",
+        "role": "analista",
+        "mensagem": "Estou atuando nesse chamado"
+      }
+    ],
+    "anexos": [
+      {
+        "nomeOriginal": "Papel de parede.jpeg",
+        "nomeSalvo": "1772050305598-240817246.jpeg",
+        "caminho": "/uploads/1772050305598-240817246.jpeg",
+        "dataUpload": "2026-02-25T20:11:45.610Z",
+        "enviadoPor": "Ricardo"
+      }
+    ]
+  },
+  {
+    "id": "1772050569300",
+    "titulo": "Problemas com email",
+    "cliente": "TX Capital",
+    "categoria": "Acesso e Permissões > Acesso a e-mail corporativo",
+    "descricao": "Meu email não carrega. Tenho uma reunião daqui a 10 minutos",
+    "prioridade": "Crítica",
+    "solicitante": "Carla",
+    "status": "Aberto",
+    "dataCriacao": "2026-02-25T20:16:09.300Z",
+    "criadoPor": "Ricardo",
+    "interacoes": [],
+    "anexos": [
+      {
+        "nomeOriginal": "Safe.jpg",
+        "nomeSalvo": "1772050569284-529327544.jpg",
+        "caminho": "/uploads/1772050569284-529327544.jpg",
+        "dataUpload": "2026-02-25T20:16:09.300Z",
+        "enviadoPor": "Ricardo"
+      }
+    ]
   }
 ]

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Service Desk - Grupos</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body { background-color: #f8f9fa; }
+
+    .sidebar { height: 100vh; background-color: #212529; }
+    .sidebar a {
+      color: #adb5bd;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+    }
+    .sidebar a:hover { background-color: #343a40; color: #fff; }
+    .sidebar .active { background-color: #343a40; color: #fff; }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/"><i class="bi bi-headset"></i> Service Desk</a>
+      <div class="d-flex">
+        <span id="userName" class="navbar-text text-white me-3">Bem-vindo</span>
+        <button id="logoutBtn" class="btn btn-outline-light btn-sm">Sair</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+
+      <!-- MENU -->
+      <%- include("partials/sidebar") %>
+
+      <!-- CONTEÚDO -->
+      <div class="col-md-10 p-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h3 class="m-0">Gestão de Grupos</h3>
+          <small class="text-muted">Acesso restrito: Admin</small>
+        </div>
+
+        <!-- ALERTAS -->
+        <div id="alertSuccess" class="alert alert-success d-none"></div>
+        <div id="alertError" class="alert alert-danger d-none"></div>
+
+        <!-- CARD CADASTRO -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-primary text-white">
+            Cadastrar Grupo
+          </div>
+          <div class="card-body">
+            <form id="formGrupo" class="row g-3" novalidate>
+              <div class="col-md-9">
+                <label class="form-label">Nome do Grupo</label>
+                <input type="text" class="form-control" id="nome" placeholder="Ex: Acesso e Permissões" required>
+                <div class="invalid-feedback">Informe o nome do grupo.</div>
+              </div>
+
+              <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-success w-100" type="submit">
+                  <i class="bi bi-plus-circle"></i> Salvar
+                </button>
+              </div>
+            </form>
+
+            <small class="text-muted d-block mt-2">
+              Dica: os grupos aparecem como sugestão no cadastro/edição de categorias.
+            </small>
+          </div>
+        </div>
+
+        <!-- LISTA -->
+        <div class="card shadow-sm">
+          <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <span>Grupos cadastrados</span>
+            <button class="btn btn-outline-light btn-sm" id="btnRecarregar">
+              <i class="bi bi-arrow-clockwise"></i> Recarregar
+            </button>
+          </div>
+
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>Grupo</th>
+                    <th>Status</th>
+                    <th style="width: 320px;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyGrupos">
+                  <tr>
+                    <td colspan="3" class="text-muted">Carregando...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <small class="text-muted">
+              Se você <strong>inativar</strong> um grupo, ele deixa de aparecer na sugestão para categorias.
+            </small>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ MODAL EDITAR GRUPO -->
+  <div class="modal fade" id="modalEditarGrupo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="formEditarGrupo" class="modal-content" novalidate>
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-pencil"></i> Editar Grupo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="editId">
+
+          <div class="mb-3">
+            <label class="form-label">Nome do Grupo</label>
+            <input type="text" class="form-control" id="editNome" required>
+            <div class="invalid-feedback">Informe o nome do grupo.</div>
+          </div>
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="editAtivo">
+            <label class="form-check-label" for="editAtivo">Ativo</label>
+          </div>
+
+          <div id="editErro" class="text-danger mt-2" style="display:none;"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Salvar alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const API = "/api/grupos";
+    let modalEditar = null;
+
+    function marcarMenuAtivo() {
+      const path = window.location.pathname;
+      document.querySelectorAll(".sidebar a").forEach(a => {
+        if (a.getAttribute("href") === path) a.classList.add("active");
+      });
+    }
+
+    function showSuccess(msg) {
+      const el = document.getElementById("alertSuccess");
+      el.innerText = msg;
+      el.classList.remove("d-none");
+      setTimeout(() => el.classList.add("d-none"), 3000);
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("alertError");
+      el.innerText = msg;
+      el.classList.remove("d-none");
+      setTimeout(() => el.classList.add("d-none"), 4000);
+    }
+
+    function setInvalid(el, isInvalid) {
+      if (!el) return;
+      el.classList.toggle("is-invalid", !!isInvalid);
+    }
+
+    function limparInvalidAoDigitar(el) {
+      el.addEventListener("input", () => setInvalid(el, false));
+    }
+
+    function validarNaoVazio(nomeEl, modo = "cadastro") {
+      const n = (nomeEl.value || "").trim();
+
+      let ok = true;
+      if (!n) { setInvalid(nomeEl, true); ok = false; }
+
+      if (!ok) {
+        if (modo === "cadastro") showError("Preencha o nome do grupo antes de salvar.");
+        if (modo === "edicao") {
+          const e = document.getElementById("editErro");
+          e.innerText = "Preencha o nome do grupo antes de salvar.";
+          e.style.display = "block";
+        }
+      }
+      return ok;
+    }
+
+    async function exigirAdmin() {
+      const ok = await verificarLogin();
+      if (!ok) return false;
+
+      const res = await authFetch("/api/auth/check");
+      const data = await res.json().catch(() => null);
+
+      if (data?.usuario?.role !== "admin") {
+        window.location.href = "/";
+        return false;
+      }
+      return true;
+    }
+
+    function abrirModalEditar(grupo) {
+      document.getElementById("editId").value = grupo.id;
+      document.getElementById("editNome").value = grupo.nome || "";
+      document.getElementById("editAtivo").checked = grupo.ativo === true;
+
+      setInvalid(document.getElementById("editNome"), false);
+
+      const e = document.getElementById("editErro");
+      e.style.display = "none";
+      e.innerText = "";
+
+      if (!modalEditar) modalEditar = new bootstrap.Modal(document.getElementById("modalEditarGrupo"));
+      modalEditar.show();
+    }
+
+    async function carregarGrupos() {
+      const tbody = document.getElementById("tbodyGrupos");
+
+      const res = await authFetch(API);
+      if (!res.ok) {
+        tbody.innerHTML = `<tr><td colspan="3" class="text-danger">Erro ao carregar grupos</td></tr>`;
+        return;
+      }
+
+      const grupos = await res.json().catch(() => []);
+
+      grupos.sort((a, b) => (a.nome || "").localeCompare((b.nome || ""), "pt-BR"));
+
+      if (!grupos.length) {
+        tbody.innerHTML = `<tr><td colspan="3" class="text-muted">Nenhum grupo cadastrado.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = "";
+      grupos.forEach(g => {
+        const ativo = g.ativo === true;
+
+        const payload = JSON.stringify({
+          id: g.id, nome: g.nome, ativo: ativo
+        }).replace(/'/g, "&apos;");
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${g.nome}</td>
+            <td>
+              <span class="badge ${ativo ? "bg-success" : "bg-secondary"}">
+                ${ativo ? "Ativo" : "Inativo"}
+              </span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-2"
+                onclick='abrirModalEditar(${payload})'>
+                <i class="bi bi-pencil"></i> Editar
+              </button>
+
+              <button class="btn btn-sm btn-outline-warning me-2"
+                onclick="toggleAtivo('${g.id}', ${ativo ? "false" : "true"})">
+                <i class="bi bi-toggle-${ativo ? "on" : "off"}"></i>
+                ${ativo ? "Inativar" : "Ativar"}
+              </button>
+
+              <button class="btn btn-sm btn-outline-danger"
+                onclick="deletarGrupo('${g.id}')">
+                <i class="bi bi-trash"></i> Deletar
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    async function deletarGrupo(id) {
+      if (!confirm("Deseja realmente deletar este grupo?")) return;
+
+      const res = await authFetch(`${API}/${id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        showError(data?.error || "Erro ao deletar grupo");
+        return;
+      }
+
+      showSuccess("Grupo removido com sucesso");
+      carregarGrupos();
+    }
+
+    async function toggleAtivo(id, ativo) {
+      const res = await authFetch(`${API}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ativo })
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        showError(data?.error || "Erro ao atualizar status");
+        return;
+      }
+
+      carregarGrupos();
+    }
+
+    // cadastro
+    const nomeEl = document.getElementById("nome");
+    limparInvalidAoDigitar(nomeEl);
+
+    document.getElementById("formGrupo").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (!validarNaoVazio(nomeEl, "cadastro")) return;
+
+      const nome = nomeEl.value.trim();
+
+      const res = await authFetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome })
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        showError(data?.error || "Erro ao salvar grupo");
+        return;
+      }
+
+      showSuccess("Grupo cadastrado com sucesso");
+      document.getElementById("formGrupo").reset();
+      setInvalid(nomeEl, false);
+      carregarGrupos();
+    });
+
+    // edição
+    const editNomeEl = document.getElementById("editNome");
+    limparInvalidAoDigitar(editNomeEl);
+
+    document.getElementById("formEditarGrupo").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const id = document.getElementById("editId").value;
+      const ativo = document.getElementById("editAtivo").checked;
+
+      const err = document.getElementById("editErro");
+      err.style.display = "none";
+      err.innerText = "";
+
+      if (!validarNaoVazio(editNomeEl, "edicao")) return;
+
+      const nome = editNomeEl.value.trim();
+
+      const res = await authFetch(`${API}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, ativo })
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        err.innerText = data?.error || "Erro ao atualizar grupo";
+        err.style.display = "block";
+        return;
+      }
+
+      modalEditar?.hide();
+      showSuccess("Grupo atualizado com sucesso");
+      carregarGrupos();
+    });
+
+    document.getElementById("btnRecarregar").addEventListener("click", carregarGrupos);
+    document.getElementById("logoutBtn").onclick = logout;
+
+    async function iniciar() {
+      marcarMenuAtivo();
+
+      const ok = await exigirAdmin();
+      if (!ok) return;
+
+      await carregarUsuarioLogado();
+      await carregarGrupos();
+    }
+
+    iniciar();
+  </script>
+
+</body>
+</html>

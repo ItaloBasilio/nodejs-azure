@@ -1,10 +1,418 @@
 [
   {
-    "id": "1772036378211",
+    "id": "1772049746184",
     "grupo": "Acesso e Permissões",
-    "nome": "Criar usuário",
-    "key": "acesso-e-permissoes::criar-usuario",
+    "nome": "Acesso a e-mail corporativo",
+    "key": "acesso-e-permissoes::acesso-a-e-mail-corporativo",
     "ativa": true,
-    "criadoEm": "2026-02-25T16:19:38.211Z"
+    "criadoEm": "2026-02-25T20:02:26.184Z"
+  },
+  {
+    "id": "1772049758819",
+    "grupo": "Acesso e Permissões",
+    "nome": "Acesso a sistemas internos",
+    "key": "acesso-e-permissoes::acesso-a-sistemas-internos",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:02:38.819Z"
+  },
+  {
+    "id": "1772049767790",
+    "grupo": "Acesso e Permissões",
+    "nome": "Bloqueio / desbloqueio de usuário",
+    "key": "acesso-e-permissoes::bloqueio-desbloqueio-de-usuario",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:02:47.790Z"
+  },
+  {
+    "id": "1772049776620",
+    "grupo": "Acesso e Permissões",
+    "nome": "Criação de usuário",
+    "key": "acesso-e-permissoes::criacao-de-usuario",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:02:56.620Z"
+  },
+  {
+    "id": "1772049785168",
+    "grupo": "Acesso e Permissões",
+    "nome": "Permissões de pastas",
+    "key": "acesso-e-permissoes::permissoes-de-pastas",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:03:05.168Z"
+  },
+  {
+    "id": "1772049797349",
+    "grupo": "Acesso e Permissões",
+    "nome": "Reset de senha",
+    "key": "acesso-e-permissoes::reset-de-senha",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:03:17.349Z"
+  },
+  {
+    "id": "1772049848036",
+    "grupo": "Arquivos e Backup",
+    "nome": "Arquivos perdidos",
+    "key": "arquivos-e-backup::arquivos-perdidos",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:04:08.036Z"
+  },
+  {
+    "id": "1772050222574",
+    "grupo": "Dispositivos Móveis",
+    "nome": "Acesso a aplicativos corporativos",
+    "key": "dispositivos-moveis::acesso-a-aplicativos-corporativos",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:10:22.574Z"
+  },
+  {
+    "id": "1772050856666",
+    "grupo": "Arquivos e Backup",
+    "nome": "Mapeamento de pastas",
+    "key": "arquivos-e-backup::mapeamento-de-pastas",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:20:56.666Z"
+  },
+  {
+    "id": "1772050866114",
+    "grupo": "Arquivos e Backup",
+    "nome": "Permissões de arquivos",
+    "key": "arquivos-e-backup::permissoes-de-arquivos",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:21:06.114Z"
+  },
+  {
+    "id": "1772050873690",
+    "grupo": "Arquivos e Backup",
+    "nome": "Restauração de backup",
+    "key": "arquivos-e-backup::restauracao-de-backup",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:21:13.690Z"
+  },
+  {
+    "id": "1772050881742",
+    "grupo": "Arquivos e Backup",
+    "nome": "Armazenamento cheio",
+    "key": "arquivos-e-backup::armazenamento-cheio",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:21:21.742Z"
+  },
+  {
+    "id": "1772050917035",
+    "grupo": "Dispositivos Móveis",
+    "nome": "Bloqueio remoto",
+    "key": "dispositivos-moveis::bloqueio-remoto",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:21:57.035Z"
+  },
+  {
+    "id": "1772050928170",
+    "grupo": "Dispositivos Móveis",
+    "nome": "Configuração de celular corporativo",
+    "key": "dispositivos-moveis::configuracao-de-celular-corporativo",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:22:08.170Z"
+  },
+  {
+    "id": "1772050947366",
+    "grupo": "Dispositivos Móveis",
+    "nome": "E-mail no celular",
+    "key": "dispositivos-moveis::e-mail-no-celular",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:22:27.366Z"
+  },
+  {
+    "id": "1772050956217",
+    "grupo": "Dispositivos Móveis",
+    "nome": "Perda ou roubo de dispositivo",
+    "key": "dispositivos-moveis::perda-ou-roubo-de-dispositivo",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:22:36.217Z"
+  },
+  {
+    "id": "1772050983906",
+    "grupo": "E-mail e Colaboração",
+    "nome": "Calendário e agenda",
+    "key": "e-mail-e-colaboracao::calendario-e-agenda",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:23:03.906Z"
+  },
+  {
+    "id": "1772050996851",
+    "grupo": "E-mail e Colaboração",
+    "nome": "Compartilhamento de caixa de e-mail",
+    "key": "e-mail-e-colaboracao::compartilhamento-de-caixa-de-e-mail",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:23:16.851Z"
+  },
+  {
+    "id": "1772051009622",
+    "grupo": "E-mail e Colaboração",
+    "nome": "Configuração de e-mail (Outlook / Webmail)",
+    "key": "e-mail-e-colaboracao::configuracao-de-e-mail-outlook-webmail",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:23:29.622Z"
+  },
+  {
+    "id": "1772051018914",
+    "grupo": "E-mail e Colaboração",
+    "nome": "Problemas para enviar/receber e-mails",
+    "key": "e-mail-e-colaboracao::problemas-para-enviar-receber-e-mails",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:23:38.914Z"
+  },
+  {
+    "id": "1772051027876",
+    "grupo": "E-mail e Colaboração",
+    "nome": "Teams / Google Meet / Zoom",
+    "key": "e-mail-e-colaboracao::teams-google-meet-zoom",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:23:47.876Z"
+  },
+  {
+    "id": "1772051135198",
+    "grupo": "Impressão e Dispositivos",
+    "nome": "Erro de fila de impressão",
+    "key": "impressao-e-dispositivos::erro-de-fila-de-impressao",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:25:35.198Z"
+  },
+  {
+    "id": "1772051142340",
+    "grupo": "Impressão e Dispositivos",
+    "nome": "Etiquetadora",
+    "key": "impressao-e-dispositivos::etiquetadora",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:25:42.340Z"
+  },
+  {
+    "id": "1772051149886",
+    "grupo": "Impressão e Dispositivos",
+    "nome": "Instalação de impressora",
+    "key": "impressao-e-dispositivos::instalacao-de-impressora",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:25:49.886Z"
+  },
+  {
+    "id": "1772051159720",
+    "grupo": "Impressão e Dispositivos",
+    "nome": "Impressora não imprime",
+    "key": "impressao-e-dispositivos::impressora-nao-imprime",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:25:59.720Z"
+  },
+  {
+    "id": "1772051168101",
+    "grupo": "Impressão e Dispositivos",
+    "nome": "Scanner",
+    "key": "impressao-e-dispositivos::scanner",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:26:08.101Z"
+  },
+  {
+    "id": "1772051181291",
+    "grupo": "Impressão e Dispositivos",
+    "nome": "Toner / cartucho",
+    "key": "impressao-e-dispositivos::toner-cartucho",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:26:21.291Z"
+  },
+  {
+    "id": "1772051254462",
+    "grupo": "Rede e Conectividade",
+    "nome": "Acesso à rede interna (LAN)",
+    "key": "rede-e-conectividade::acesso-a-rede-interna-lan",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:27:34.462Z"
+  },
+  {
+    "id": "1772051263911",
+    "grupo": "Rede e Conectividade",
+    "nome": "Cabeamento / ponto de rede",
+    "key": "rede-e-conectividade::cabeamento-ponto-de-rede",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:27:43.911Z"
+  },
+  {
+    "id": "1772051271252",
+    "grupo": "Rede e Conectividade",
+    "nome": "Configuração de Wi-Fi",
+    "key": "rede-e-conectividade::configuracao-de-wi-fi",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:27:51.252Z"
+  },
+  {
+    "id": "1772051279061",
+    "grupo": "Rede e Conectividade",
+    "nome": "Internet lenta / instável",
+    "key": "rede-e-conectividade::internet-lenta-instavel",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:27:59.061Z"
+  },
+  {
+    "id": "1772051288803",
+    "grupo": "Rede e Conectividade",
+    "nome": "Sem acesso à internet",
+    "key": "rede-e-conectividade::sem-acesso-a-internet",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:28:08.803Z"
+  },
+  {
+    "id": "1772051296834",
+    "grupo": "Rede e Conectividade",
+    "nome": "VPN (acesso remoto)",
+    "key": "rede-e-conectividade::vpn-acesso-remoto",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:28:16.834Z"
+  },
+  {
+    "id": "1772051324054",
+    "grupo": "Segurança da Informação",
+    "nome": "Atualização de antivírus",
+    "key": "seguranca-da-informacao::atualizacao-de-antivirus",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:28:44.054Z"
+  },
+  {
+    "id": "1772051332153",
+    "grupo": "Segurança da Informação",
+    "nome": "Bloqueio por segurança",
+    "key": "seguranca-da-informacao::bloqueio-por-seguranca",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:28:52.153Z"
+  },
+  {
+    "id": "1772051338905",
+    "grupo": "Segurança da Informação",
+    "nome": "Incidente de segurança",
+    "key": "seguranca-da-informacao::incidente-de-seguranca",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:28:58.905Z"
+  },
+  {
+    "id": "1772051345513",
+    "grupo": "Segurança da Informação",
+    "nome": "Suspeita de phishing",
+    "key": "seguranca-da-informacao::suspeita-de-phishing",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:29:05.513Z"
+  },
+  {
+    "id": "1772051352678",
+    "grupo": "Segurança da Informação",
+    "nome": "Vírus / malware",
+    "key": "seguranca-da-informacao::virus-malware",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:29:12.678Z"
+  },
+  {
+    "id": "1772051383328",
+    "grupo": "Sistemas e Aplicações",
+    "nome": "Acesso negado",
+    "key": "sistemas-e-aplicacoes::acesso-negado",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:29:43.328Z"
+  },
+  {
+    "id": "1772051390609",
+    "grupo": "Sistemas e Aplicações",
+    "nome": "Cadastro / ajuste de dados",
+    "key": "sistemas-e-aplicacoes::cadastro-ajuste-de-dados",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:29:50.609Z"
+  },
+  {
+    "id": "1772051399333",
+    "grupo": "Sistemas e Aplicações",
+    "nome": "Erro em sistema interno",
+    "key": "sistemas-e-aplicacoes::erro-em-sistema-interno",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:29:59.333Z"
+  },
+  {
+    "id": "1772051406657",
+    "grupo": "Sistemas e Aplicações",
+    "nome": "Integração entre sistemas",
+    "key": "sistemas-e-aplicacoes::integracao-entre-sistemas",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:30:06.657Z"
+  },
+  {
+    "id": "1772051413713",
+    "grupo": "Sistemas e Aplicações",
+    "nome": "Lentidão em sistemas",
+    "key": "sistemas-e-aplicacoes::lentidao-em-sistemas",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:30:13.713Z"
+  },
+  {
+    "id": "1772051421492",
+    "grupo": "Sistemas e Aplicações",
+    "nome": "Sistema fora do ar",
+    "key": "sistemas-e-aplicacoes::sistema-fora-do-ar",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:30:21.492Z"
+  },
+  {
+    "id": "1772051432029",
+    "grupo": "Solicitações e Melhorias",
+    "nome": "Solicitação de melhoria",
+    "key": "solicitacoes-e-melhorias::solicitacao-de-melhoria",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:30:32.029Z"
+  },
+  {
+    "id": "1772051439580",
+    "grupo": "Solicitações e Melhorias",
+    "nome": "Solicitação de novo equipamento",
+    "key": "solicitacoes-e-melhorias::solicitacao-de-novo-equipamento",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:30:39.580Z"
+  },
+  {
+    "id": "1772051448840",
+    "grupo": "Suporte Técnico",
+    "nome": "Configuração de periféricos (mouse, teclado, monitor, impressora)",
+    "key": "suporte-tecnico::configuracao-de-perifericos-mouse-teclado-monitor-impressora",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:30:48.840Z"
+  },
+  {
+    "id": "1772051456764",
+    "grupo": "Suporte Técnico",
+    "nome": "Formatação / reinstalação de sistema operacional",
+    "key": "suporte-tecnico::formatacao-reinstalacao-de-sistema-operacional",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:30:56.764Z"
+  },
+  {
+    "id": "1772051469002",
+    "grupo": "Suporte Técnico",
+    "nome": "Instalação e atualização de softwares",
+    "key": "suporte-tecnico::instalacao-e-atualizacao-de-softwares",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:31:09.002Z"
+  },
+  {
+    "id": "1772051477010",
+    "grupo": "Suporte Técnico",
+    "nome": "Lentidão do sistema",
+    "key": "suporte-tecnico::lentidao-do-sistema",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:31:17.010Z"
+  },
+  {
+    "id": "1772051486250",
+    "grupo": "Suporte Técnico",
+    "nome": "Problemas com computador / notebook",
+    "key": "suporte-tecnico::problemas-com-computador-notebook",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:31:26.250Z"
+  },
+  {
+    "id": "1772051493444",
+    "grupo": "Suporte Técnico",
+    "nome": "Tela azul / erros de inicialização",
+    "key": "suporte-tecnico::tela-azul-erros-de-inicializacao",
+    "ativa": true,
+    "criadoEm": "2026-02-25T20:31:33.444Z"
   }
 ]
