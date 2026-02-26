@@ -5,16 +5,22 @@
     "usuario": "admin",
     "senha": "1",
     "role": "admin",
-    "ativo": true
+    "ativo": true,
+    "tentativasInvalidas": 0,
+    "bloqueadoAte": null,
+    "bloqueado": false
   },
   {
     "id": 1772033332489,
     "nome": "Italo",
     "usuario": "italo",
     "senha": "1",
-    "role": "analista",
+    "role": "admin",
     "ativo": true,
-    "atualizadoEm": "2026-02-26T12:24:22.627Z"
+    "atualizadoEm": "2026-02-26T12:24:22.627Z",
+    "tentativasInvalidas": 0,
+    "bloqueadoAte": null,
+    "bloqueado": false
   },
   {
     "id": 1772050070732,
@@ -23,6 +29,21 @@
     "senha": "1",
     "role": "analista",
     "ativo": true,
-    "atualizadoEm": "2026-02-26T12:09:00.357Z"
+    "atualizadoEm": "2026-02-26T13:48:13.319Z",
+    "tentativasInvalidas": 0,
+    "bloqueadoAte": null,
+    "bloqueado": false
+  },
+  {
+    "id": 1772113685004,
+    "nome": "Andressa Dubout",
+    "usuario": "andressa",
+    "senha": "1",
+    "role": "analista",
+    "ativo": true,
+    "criadoEm": "2026-02-26T13:48:05.004Z",
+    "tentativasInvalidas": 0,
+    "bloqueadoAte": null,
+    "bloqueado": false
   }
 ]

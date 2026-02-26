@@ -53,6 +53,19 @@ router.get("/gestao-grupos", function (req, res) {
 });
 
 /* ===============================
+   ✅ NOVA ROTA: GESTÃO DE Logs
+================================= */
+
+router.get("/gestao-logs-login", function (req, res) {
+  res.render("gestao-logs-login");
+});
+
+
+router.get("/gestao-bloqueios-login", function (req, res) {
+  res.render("gestao-bloqueios-login");
+});
+
+/* ===============================
    DETALHE DO CHAMADO
 ================================= */
 

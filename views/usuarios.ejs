@@ -150,7 +150,7 @@
                                 <th>Usuário</th>
                                 <th>Status</th>
                                 <th style="width: 240px;">Role</th>
-                                <th style="width: 520px;">Ações</th>
+                                <th style="width: 640px;">Ações</th>
                             </tr>
                             </thead>
                             <tbody id="tbodyUsuarios">
@@ -210,7 +210,6 @@
 
 <script>
     const API_USUARIOS = "/api/usuarios";
-    // ✅ novo endpoint sugerido (mesma ideia do toggle do grupo)
     const API_USUARIOS_ATIVO = (id) => `/api/usuarios/${id}/ativo`;
 
     const modalSenhaEl = document.getElementById("modalSenha");
@@ -367,7 +366,6 @@
         usuarios.forEach(u => {
             const isSelf = String(u.id) === myId;
 
-            // ✅ se não existir "ativo" no seu JSON, vamos assumir true
             const ativo = (u.ativo !== false);
             const statusTxt = ativo ? "Ativo" : "Inativo";
 
@@ -404,9 +402,7 @@
                     </td>
 
                     <td class="d-flex gap-2 flex-wrap">
-                        ${isSelf ? `<span class="badge bg-secondary align-self-center">você</span>` : ``}
-
-                        <!-- ✅ NOVO BOTÃO: Ativar/Inativar -->
+                        <!-- ✅ Ativar/Inativar -->
                         <button class="btn btn-sm btn-outline-warning" type="button"
                             ${isSelf ? "disabled" : ""}
                             onclick="toggleAtivoUsuario('${u.id}', ${ativo ? "false" : "true"}, '${u.usuario}')">
@@ -482,7 +478,6 @@
         await carregarUsuarios();
     }
 
-    // ✅ NOVO: Ativar/Inativar usuário (precisa existir no back: PUT /api/usuarios/:id/ativo)
     window.toggleAtivoUsuario = async function(id, ativo, usuario) {
         const acao = ativo ? "Ativar" : "Inativar";
         const ok = confirm(`${acao} o usuário "${usuario}"?`);
@@ -496,7 +491,6 @@
 
         const data = await res.json().catch(() => null);
         if (!res.ok) {
-            // se o endpoint não existir, vai cair aqui
             showError(data?.error || data?.message || `Erro ao ${acao.toLowerCase()} usuário (${res.status}).`);
             return;
         }
@@ -576,7 +570,7 @@
 
         await carregarUsuarioLogado();
 
-        prepararFiltroUsuarios(); // ✅ filtro
+        prepararFiltroUsuarios();
 
         await carregarUsuarios();
     }

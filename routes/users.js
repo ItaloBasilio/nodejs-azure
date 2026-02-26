@@ -8,13 +8,15 @@ const { authJwt } = require("../middlewares/authJwt");
 
 const usuariosPath = path.join(__dirname, "../usuarios.json");
 
+// ✅ fonte de verdade do lockout
+const loginAttemptsPath = path.join(__dirname, "../loginAttempts.json");
+
 /* ===============================
    HELPERS
 ================================= */
 
-function garantirArquivo() {
+function garantirArquivoInicial() {
   if (!fs.existsSync(usuariosPath)) {
-    // cria arquivo inicial com admin padrão
     fs.writeFileSync(
       usuariosPath,
       JSON.stringify(
@@ -26,7 +28,6 @@ function garantirArquivo() {
             senha: "1234",
             role: "admin",
             ativo: true,
-            criadoEm: new Date().toISOString(),
           },
         ],
         null,
@@ -37,32 +38,26 @@ function garantirArquivo() {
 }
 
 function normalizarUsuarios(usuarios) {
-  // garante campo "ativo" para dados antigos
   let mudou = false;
 
-  const normalizados = (usuarios || []).map((u) => {
-    const novo = { ...u };
-
-    if (typeof novo.ativo !== "boolean") {
-      novo.ativo = true;
+  for (const u of usuarios) {
+    if (typeof u.ativo !== "boolean") {
+      u.ativo = true;
       mudou = true;
     }
+  }
 
-    return novo;
-  });
-
-  return { normalizados, mudou };
+  return { usuarios, mudou };
 }
 
 function lerUsuarios() {
-  garantirArquivo();
+  garantirArquivoInicial();
 
-  const raw = JSON.parse(fs.readFileSync(usuariosPath, "utf8"));
-  const { normalizados, mudou } = normalizarUsuarios(raw);
+  const usuarios = JSON.parse(fs.readFileSync(usuariosPath, "utf8"));
+  const { usuarios: normalizados, mudou } = normalizarUsuarios(usuarios);
 
-  // se faltava "ativo" em algum usuário antigo, salva de volta
   if (mudou) {
-    salvarUsuarios(normalizados);
+    fs.writeFileSync(usuariosPath, JSON.stringify(normalizados, null, 2));
   }
 
   return normalizados;
@@ -70,6 +65,42 @@ function lerUsuarios() {
 
 function salvarUsuarios(usuarios) {
   fs.writeFileSync(usuariosPath, JSON.stringify(usuarios, null, 2));
+}
+
+/* ===== attempts ===== */
+
+function garantirAttemptsArquivo() {
+  if (!fs.existsSync(loginAttemptsPath)) {
+    fs.writeFileSync(loginAttemptsPath, JSON.stringify([], null, 2));
+  }
+}
+
+function lerAttempts() {
+  garantirAttemptsArquivo();
+  return JSON.parse(fs.readFileSync(loginAttemptsPath, "utf8"));
+}
+
+function salvarAttempts(attempts) {
+  fs.writeFileSync(loginAttemptsPath, JSON.stringify(attempts, null, 2));
+}
+
+function getAttemptsEntry(attempts, userKey) {
+  return attempts.find(
+    (a) => String(a.usuario).toLowerCase() === String(userKey).toLowerCase()
+  );
+}
+
+function estaBloqueadoPorAttempts(entry) {
+  if (!entry?.blockedUntil) return false;
+  const t = new Date(entry.blockedUntil).getTime();
+  return Number.isFinite(t) && t > Date.now();
+}
+
+function resetarAttempts(entry) {
+  entry.failCount = 0;
+  entry.firstFailAt = null;
+  entry.lastFailAt = null;
+  entry.blockedUntil = null;
 }
 
 /* ===============================
@@ -88,26 +119,37 @@ function somenteAdmin(req, res, next) {
    ROTAS (PROTEGIDAS POR JWT)
 ================================= */
 
-// 🔐 Todas exigem token válido
 router.use(authJwt);
 
 /**
  * GET /
  * Lista usuários (admin apenas)
  * (NUNCA devolver senha)
+ * ✅ Agora devolve status real do lockout via loginAttempts.json
  */
 router.get("/", somenteAdmin, (req, res) => {
   const usuarios = lerUsuarios();
+  const attempts = lerAttempts();
 
-  const usuariosSafe = usuarios.map((u) => ({
-    id: u.id,
-    nome: u.nome,
-    usuario: u.usuario,
-    role: u.role,
-    ativo: u.ativo === true,
-    criadoEm: u.criadoEm,
-    atualizadoEm: u.atualizadoEm,
-  }));
+  const usuariosSafe = usuarios.map((u) => {
+    const userKey = String(u.usuario || "").toLowerCase();
+    const entry = getAttemptsEntry(attempts, userKey);
+
+    const bloqueado = estaBloqueadoPorAttempts(entry);
+
+    return {
+      id: u.id,
+      nome: u.nome,
+      usuario: u.usuario,
+      role: u.role,
+      ativo: u.ativo,
+
+      // ✅ lockout real
+      bloqueado,
+      bloqueadoAte: entry?.blockedUntil ?? null,
+      tentativasInvalidas: entry?.failCount ?? 0,
+    };
+  });
 
   res.json(usuariosSafe);
 });
@@ -120,16 +162,12 @@ router.post("/", somenteAdmin, (req, res) => {
   const { nome, usuario, senha, role } = req.body;
 
   if (!nome || !usuario || !senha || !role) {
-    return res.status(400).json({
-      error: "Todos os campos são obrigatórios",
-    });
+    return res.status(400).json({ error: "Todos os campos são obrigatórios" });
   }
 
   const roleOk = role === "admin" || role === "analista";
   if (!roleOk) {
-    return res.status(400).json({
-      error: "Role inválida. Use: admin ou analista",
-    });
+    return res.status(400).json({ error: "Role inválida. Use: admin ou analista" });
   }
 
   const usuariosDb = lerUsuarios();
@@ -138,19 +176,16 @@ router.post("/", somenteAdmin, (req, res) => {
     (u) => String(u.usuario).toLowerCase() === String(usuario).toLowerCase()
   );
   if (existe) {
-    return res.status(400).json({
-      error: "Usuário já existe",
-    });
+    return res.status(400).json({ error: "Usuário já existe" });
   }
 
   const novoUsuario = {
     id: Date.now(),
     nome: String(nome).trim(),
     usuario: String(usuario).trim(),
-    senha: String(senha), // futuramente: hash
+    senha: String(senha),
     role,
     ativo: true,
-    criadoEm: new Date().toISOString(),
   };
 
   usuariosDb.push(novoUsuario);
@@ -164,6 +199,9 @@ router.post("/", somenteAdmin, (req, res) => {
       usuario: novoUsuario.usuario,
       role: novoUsuario.role,
       ativo: novoUsuario.ativo,
+      bloqueado: false,
+      bloqueadoAte: null,
+      tentativasInvalidas: 0,
     },
   });
 });
@@ -176,19 +214,13 @@ router.put("/:id/senha", somenteAdmin, (req, res) => {
   const { id } = req.params;
   const { senha } = req.body;
 
-  if (!senha) {
-    return res.status(400).json({ error: "Informe a nova senha" });
-  }
+  if (!senha) return res.status(400).json({ error: "Informe a nova senha" });
 
   const usuariosDb = lerUsuarios();
   const idx = usuariosDb.findIndex((u) => String(u.id) === String(id));
-
-  if (idx === -1) {
-    return res.status(404).json({ error: "Usuário não encontrado" });
-  }
+  if (idx === -1) return res.status(404).json({ error: "Usuário não encontrado" });
 
   usuariosDb[idx].senha = String(senha);
-  usuariosDb[idx].atualizadoEm = new Date().toISOString();
   salvarUsuarios(usuariosDb);
 
   return res.json({ message: "Senha alterada com sucesso" });
@@ -197,92 +229,96 @@ router.put("/:id/senha", somenteAdmin, (req, res) => {
 /**
  * PUT /:id/role
  * Alterar role (admin apenas)
- * Body: { "role": "admin" | "analista" }
  */
 router.put("/:id/role", somenteAdmin, (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
 
-  if (!role) {
-    return res.status(400).json({ error: "Informe a nova role" });
-  }
+  if (!role) return res.status(400).json({ error: "Informe a nova role" });
 
   const roleOk = role === "admin" || role === "analista";
   if (!roleOk) {
-    return res.status(400).json({
-      error: "Role inválida. Use: admin ou analista",
-    });
+    return res.status(400).json({ error: "Role inválida. Use: admin ou analista" });
   }
 
-  // ❗ Segurança: impede admin de mudar a própria role
   if (String(id) === String(req.usuario.id)) {
-    return res.status(400).json({
-      error: "Não é permitido alterar a própria role",
-    });
+    return res.status(400).json({ error: "Não é permitido alterar a própria role" });
   }
 
   const usuariosDb = lerUsuarios();
   const idx = usuariosDb.findIndex((u) => String(u.id) === String(id));
-
-  if (idx === -1) {
-    return res.status(404).json({ error: "Usuário não encontrado" });
-  }
+  if (idx === -1) return res.status(404).json({ error: "Usuário não encontrado" });
 
   usuariosDb[idx].role = role;
-  usuariosDb[idx].atualizadoEm = new Date().toISOString();
   salvarUsuarios(usuariosDb);
 
   return res.json({
     message: "Role alterada com sucesso",
-    usuario: {
-      id: usuariosDb[idx].id,
-      nome: usuariosDb[idx].nome,
-      usuario: usuariosDb[idx].usuario,
-      role: usuariosDb[idx].role,
-      ativo: usuariosDb[idx].ativo === true,
-    },
   });
 });
 
 /**
  * ✅ PUT /:id/ativo
  * Ativar/Inativar usuário (admin apenas)
- * Body: { "ativo": true|false }
  */
 router.put("/:id/ativo", somenteAdmin, (req, res) => {
   const { id } = req.params;
   const { ativo } = req.body;
 
   if (typeof ativo !== "boolean") {
-    return res.status(400).json({ error: "Informe o campo ativo (true/false)" });
+    return res.status(400).json({ error: "Informe ativo como boolean (true/false)" });
   }
 
   const usuariosDb = lerUsuarios();
   const idx = usuariosDb.findIndex((u) => String(u.id) === String(id));
+  if (idx === -1) return res.status(404).json({ error: "Usuário não encontrado" });
 
-  if (idx === -1) {
-    return res.status(404).json({ error: "Usuário não encontrado" });
-  }
-
-  // ❗ Segurança: impede admin de se inativar
-  if (String(usuariosDb[idx].id) === String(req.usuario.id)) {
-    return res.status(400).json({
-      error: "Não é permitido inativar o próprio usuário",
-    });
+  if (String(usuariosDb[idx].id) === String(req.usuario.id) && ativo === false) {
+    return res.status(400).json({ error: "Não é permitido inativar o próprio usuário" });
   }
 
   usuariosDb[idx].ativo = ativo;
-  usuariosDb[idx].atualizadoEm = new Date().toISOString();
   salvarUsuarios(usuariosDb);
 
   return res.json({
     message: `Usuário ${ativo ? "ativado" : "inativado"} com sucesso`,
+  });
+});
+
+/**
+ * ✅ PUT /:id/desbloquear
+ * Admin desbloqueia usuário ANTES do tempo
+ * ✅ Agora limpa a fonte de verdade: loginAttempts.json
+ */
+router.put("/:id/desbloquear", somenteAdmin, (req, res) => {
+  const { id } = req.params;
+
+  const usuariosDb = lerUsuarios();
+  const idx = usuariosDb.findIndex((u) => String(u.id) === String(id));
+  if (idx === -1) return res.status(404).json({ error: "Usuário não encontrado" });
+
+  const username = String(usuariosDb[idx].usuario || "").trim();
+  const userKey = username.toLowerCase();
+
+  const attempts = lerAttempts();
+  const entry = getAttemptsEntry(attempts, userKey);
+
+  if (entry) {
+    resetarAttempts(entry);
+    salvarAttempts(attempts);
+  }
+
+  return res.json({
+    message: "Usuário desbloqueado com sucesso",
     usuario: {
       id: usuariosDb[idx].id,
       nome: usuariosDb[idx].nome,
       usuario: usuariosDb[idx].usuario,
       role: usuariosDb[idx].role,
-      ativo: usuariosDb[idx].ativo === true,
+      ativo: usuariosDb[idx].ativo,
+      bloqueado: false,
+      bloqueadoAte: null,
+      tentativasInvalidas: 0,
     },
   });
 });
@@ -296,20 +332,22 @@ router.delete("/:id", somenteAdmin, (req, res) => {
 
   const usuariosDb = lerUsuarios();
   const idx = usuariosDb.findIndex((u) => String(u.id) === String(id));
+  if (idx === -1) return res.status(404).json({ error: "Usuário não encontrado" });
 
-  if (idx === -1) {
-    return res.status(404).json({ error: "Usuário não encontrado" });
-  }
-
-  // ❗ Segurança: impede admin de se deletar
   if (String(usuariosDb[idx].id) === String(req.usuario.id)) {
-    return res.status(400).json({
-      error: "Não é permitido deletar o próprio usuário",
-    });
+    return res.status(400).json({ error: "Não é permitido deletar o próprio usuário" });
   }
 
   const removido = usuariosDb.splice(idx, 1)[0];
   salvarUsuarios(usuariosDb);
+
+  // remove attempts também
+  const attempts = lerAttempts();
+  const userKey = String(removido.usuario || "").toLowerCase();
+  const filtrado = attempts.filter(
+    (a) => String(a.usuario).toLowerCase() !== userKey
+  );
+  salvarAttempts(filtrado);
 
   return res.json({
     message: "Usuário removido com sucesso",
@@ -318,7 +356,7 @@ router.delete("/:id", somenteAdmin, (req, res) => {
       nome: removido.nome,
       usuario: removido.usuario,
       role: removido.role,
-      ativo: removido.ativo === true,
+      ativo: removido.ativo,
     },
   });
 });

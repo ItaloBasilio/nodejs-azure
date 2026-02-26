@@ -1,0 +1,23 @@
+[
+  {
+    "usuario": "italo",
+    "failCount": 0,
+    "firstFailAt": null,
+    "lastFailAt": null,
+    "blockedUntil": null
+  },
+  {
+    "usuario": "andressa",
+    "failCount": 5,
+    "firstFailAt": "2026-02-26T17:11:23.646Z",
+    "lastFailAt": "2026-02-26T17:11:26.104Z",
+    "blockedUntil": "2026-02-26T17:26:26.104Z"
+  },
+  {
+    "usuario": "admin",
+    "failCount": 0,
+    "firstFailAt": null,
+    "lastFailAt": null,
+    "blockedUntil": null
+  }
+]

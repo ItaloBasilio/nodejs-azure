@@ -129,6 +129,12 @@
         "autor": "Ricardo",
         "role": "analista",
         "mensagem": "Atuando nesse chamado"
+      },
+      {
+        "data": "2026-02-26T13:48:40.375Z",
+        "autor": "Andressa Dubout",
+        "role": "analista",
+        "mensagem": "Em atendimento com o usuário no local."
       }
     ],
     "anexos": []

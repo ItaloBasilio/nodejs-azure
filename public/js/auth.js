@@ -1,5 +1,8 @@
 // public/js/auth.js
 
+/* =========================
+   TOKEN HELPERS
+========================= */
 function getToken() {
   return localStorage.getItem("token");
 }
@@ -16,6 +19,9 @@ function isLoginPage() {
   return window.location.pathname === "/login";
 }
 
+/* =========================
+   AUTH FETCH
+========================= */
 /**
  * authFetch:
  * - Sempre injeta Authorization: Bearer <token>
@@ -43,6 +49,38 @@ async function authFetch(url, options = {}) {
   });
 }
 
+/* =========================
+   CHECK / CACHE DO USUÁRIO
+========================= */
+
+let __authCache = {
+  at: 0,
+  data: null,
+};
+
+async function getAuthCheck(force = false) {
+  const token = getToken();
+  if (!token) return null;
+
+  const now = Date.now();
+  // cache curto só pra evitar múltiplas chamadas na mesma tela
+  if (!force && __authCache.data && now - __authCache.at < 15000) {
+    return __authCache.data;
+  }
+
+  try {
+    const res = await authFetch("/api/auth/check");
+    if (!res.ok) return null;
+
+    const data = await res.json().catch(() => null);
+    __authCache = { at: now, data };
+    return data;
+  } catch (err) {
+    console.error("❌ Erro ao chamar /api/auth/check:", err);
+    return null;
+  }
+}
+
 /**
  * Verifica token chamando /api/auth/check
  * - Se inválido: remove token e redireciona
@@ -55,23 +93,19 @@ async function verificarLogin() {
     return false;
   }
 
-  try {
-    const res = await authFetch("/api/auth/check");
-
-    if (!res.ok) {
-      clearToken();
-      if (!isLoginPage()) window.location.href = "/login";
-      return false;
-    }
-
-    return true;
-  } catch (err) {
-    console.error("❌ Erro ao validar token:", err);
+  const data = await getAuthCheck(true);
+  if (!data?.logado) {
     clearToken();
     if (!isLoginPage()) window.location.href = "/login";
     return false;
   }
+
+  return true;
 }
+
+/* =========================
+   PERMISSÕES / MENU
+========================= */
 
 /**
  * Aplica permissões no menu:
@@ -80,12 +114,16 @@ async function verificarLogin() {
  *   #menuClientes (Gestão de Clientes)
  *   #menuCategorias (Gestão de Categorias)
  *   #menuGrupos (Gestão de Grupos)
+ *   #menuLogsLogin (Logs de Login)
+ *   #menuBloqueiosLogin (Bloqueios de Login) ✅
  */
 function aplicarPermissoesMenu(data) {
   const menuUsuarios = document.getElementById("menuUsuarios");
   const menuClientes = document.getElementById("menuClientes");
   const menuCategorias = document.getElementById("menuCategorias");
   const menuGrupos = document.getElementById("menuGrupos");
+  const menuLogsLogin = document.getElementById("menuLogsLogin");
+  const menuBloqueiosLogin = document.getElementById("menuBloqueiosLogin");
 
   const isAdmin = data?.usuario?.role === "admin";
 
@@ -108,7 +146,42 @@ function aplicarPermissoesMenu(data) {
     if (isAdmin) menuGrupos.classList.remove("d-none");
     else menuGrupos.classList.add("d-none");
   }
+
+  if (menuLogsLogin) {
+    if (isAdmin) menuLogsLogin.classList.remove("d-none");
+    else menuLogsLogin.classList.add("d-none");
+  }
+
+  // ✅ novo menu: Bloqueios de Login
+  if (menuBloqueiosLogin) {
+    if (isAdmin) menuBloqueiosLogin.classList.remove("d-none");
+    else menuBloqueiosLogin.classList.add("d-none");
+  }
 }
+
+/**
+ * (Opcional) Protege páginas admin no FRONT:
+ * Use em páginas admin: await exigirAdmin();
+ */
+async function exigirAdmin() {
+  const ok = await verificarLogin();
+  if (!ok) return false;
+
+  const data = await getAuthCheck();
+  const isAdmin = data?.usuario?.role === "admin";
+
+  if (!isAdmin) {
+    alert("Acesso negado. Apenas ADMIN.");
+    window.location.href = "/";
+    return false;
+  }
+
+  return true;
+}
+
+/* =========================
+   USUÁRIO LOGADO / UI
+========================= */
 
 /**
  * Carrega o usuário e escreve no elemento #userName.
@@ -122,29 +195,26 @@ async function carregarUsuarioLogado() {
   const ok = await verificarLogin();
   if (!ok) return;
 
-  try {
-    const res = await authFetch("/api/auth/check");
-    if (!res.ok) {
-      console.warn("⚠️ /api/auth/check não OK:", res.status);
-      return;
-    }
+  const data = await getAuthCheck();
+  if (!data) {
+    console.warn("⚠️ Não foi possível obter /api/auth/check.");
+    return;
+  }
 
-    const data = await res.json().catch(() => null);
+  // ✅ aplica permissões do menu com base na role
+  aplicarPermissoesMenu(data);
 
-    // ✅ aplica permissões do menu com base na role
-    aplicarPermissoesMenu(data);
-
-    if (el && data?.usuario?.nome) {
-      el.innerText = `Bem-vindo, ${data.usuario.nome}`;
-    } else {
-      if (el) el.innerText = "Bem-vindo";
-      console.warn("⚠️ Resposta de /api/auth/check sem usuario.nome:", data);
-    }
-  } catch (err) {
-    console.error("❌ Erro ao carregar usuário:", err);
-    if (!isLoginPage()) window.location.href = "/login";
+  if (el && data?.usuario?.nome) {
+    el.innerText = `Bem-vindo, ${data.usuario.nome}`;
+  } else {
+    if (el) el.innerText = "Bem-vindo";
+    console.warn("⚠️ Resposta de /api/auth/check sem usuario.nome:", data);
   }
 }
+
+/* =========================
+   LOGOUT
+========================= */
 
 /**
  * Logout no JWT é client-side.
@@ -157,6 +227,7 @@ async function logout() {
     // ignora
   } finally {
     clearToken();
+    __authCache = { at: 0, data: null };
     window.location.href = "/login";
   }
 }

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Service Desk - Logs de Login</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body { background-color: #f8f9fa; }
+
+    .sidebar { height: 100vh; background-color: #212529; }
+    .sidebar a {
+      color: #adb5bd;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+    }
+    .sidebar a:hover { background-color: #343a40; color: #fff; }
+    .sidebar .active { background-color: #343a40; color: #fff; }
+
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .nowrap { white-space: nowrap; }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/"><i class="bi bi-headset"></i> Service Desk</a>
+      <div class="d-flex">
+        <span id="userName" class="navbar-text text-white me-3">Bem-vindo</span>
+        <button id="logoutBtn" class="btn btn-outline-light btn-sm">Sair</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+
+      <!-- MENU -->
+      <%- include("partials/sidebar") %>
+
+      <!-- CONTEÚDO -->
+      <div class="col-md-10 p-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h3 class="m-0">Logs de Tentativas de Login</h3>
+          <small class="text-muted">Acesso restrito: Admin</small>
+        </div>
+
+        <!-- ALERTAS -->
+        <div id="alertError" class="alert alert-danger d-none"></div>
+
+        <!-- CARD LISTA -->
+        <div class="card shadow-sm">
+          <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <span>Registros</span>
+            <button class="btn btn-outline-light btn-sm" id="btnRecarregar">
+              <i class="bi bi-arrow-clockwise"></i> Recarregar
+            </button>
+          </div>
+
+          <div class="card-body">
+
+            <!-- ✅ FILTRO + CONTROLES -->
+            <div class="row g-2 align-items-end mb-3">
+              <div class="col-md-6">
+                <label class="form-label mb-1">Pesquisar</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-search"></i></span>
+                  <input id="txtFiltro" class="form-control" placeholder="Digite usuário, resultado, IP, role ou status..." />
+                  <button class="btn btn-outline-secondary" id="btnLimpar" type="button">Limpar</button>
+                </div>
+                <small class="text-muted">
+                  Busca em: <strong>Usuário</strong>, <strong>Resultado</strong>, <strong>IP</strong>, <strong>Role</strong>, <strong>Status</strong>
+                </small>
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label mb-1">Itens por página</label>
+                <select id="selPageSize" class="form-select">
+                  <option value="10" selected>10</option>
+                  <option value="25" >25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+
+              <div class="col-md-3 text-md-end">
+                <div class="fw-semibold" id="lblContagem">0 resultado(s)</div>
+                <div class="small text-muted" id="lblPagina">Página 1</div>
+              </div>
+            </div>
+
+            <!-- ✅ TABELA -->
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th class="nowrap">Data/Hora</th>
+                    <th>Usuário</th>
+                    <th>Resultado</th>
+                    <th>Status</th>
+                    <th>Role</th>
+                    <th class="mono">IP</th>
+                    <th>UserId</th>
+                    <th>User-Agent</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyLogs">
+                  <tr>
+                    <td colspan="8" class="text-muted">Carregando...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- ✅ PAGINAÇÃO -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <div class="small text-muted" id="lblResumo"></div>
+
+              <div class="btn-group" role="group" aria-label="Paginação">
+                <button class="btn btn-outline-secondary" id="btnPrev">
+                  <i class="bi bi-chevron-left"></i> Anterior
+                </button>
+                <button class="btn btn-outline-secondary" id="btnNext">
+                  Próxima <i class="bi bi-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const API_LOGS = "/api/auth/login-logs?limit=2000";
+
+    let logsOriginais = [];
+    let logsFiltrados = [];
+
+    let page = 1;
+    let pageSize = 25;
+
+    function marcarMenuAtivo() {
+      const path = window.location.pathname;
+      document.querySelectorAll(".sidebar a").forEach(a => {
+        if (a.getAttribute("href") === path) a.classList.add("active");
+      });
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("alertError");
+      el.innerText = msg;
+      el.classList.remove("d-none");
+      setTimeout(() => el.classList.add("d-none"), 4500);
+    }
+
+    async function exigirAdmin() {
+      const ok = await verificarLogin();
+      if (!ok) return false;
+
+      const res = await authFetch("/api/auth/check");
+      const data = await res.json().catch(() => null);
+
+      if (data?.usuario?.role !== "admin") {
+        window.location.href = "/";
+        return false;
+      }
+      return true;
+    }
+
+    function formatarDataISO(iso) {
+      if (!iso) return "-";
+      try {
+        const d = new Date(iso);
+        return d.toLocaleString("pt-BR");
+      } catch (e) {
+        return iso;
+      }
+    }
+
+    function badgeResultado(r) {
+      const val = String(r || "").toLowerCase();
+      if (val === "sucesso") return `<span class="badge bg-success">sucesso</span>`;
+      if (val === "usuario_inativo") return `<span class="badge bg-warning text-dark">usuario_inativo</span>`;
+      if (val === "credenciais_invalidas") return `<span class="badge bg-danger">credenciais_invalidas</span>`;
+      if (val === "usuario_nao_encontrado") return `<span class="badge bg-secondary">usuario_nao_encontrado</span>`;
+      return `<span class="badge bg-dark">${r || "-"}</span>`;
+    }
+
+    function badgeStatus(ativo) {
+      if (ativo === true) return `<span class="badge bg-success">Ativo</span>`;
+      if (ativo === false) return `<span class="badge bg-secondary">Inativo</span>`;
+      return `<span class="badge bg-light text-dark">-</span>`;
+    }
+
+    function aplicarFiltro() {
+      const q = (document.getElementById("txtFiltro").value || "").trim().toLowerCase();
+
+      if (!q) {
+        logsFiltrados = [...logsOriginais];
+      } else {
+        logsFiltrados = logsOriginais.filter(l => {
+          const usuario = String(l.usuarioInformado || "").toLowerCase();
+          const resultado = String(l.resultado || "").toLowerCase();
+          const ip = String(l.ip || "").toLowerCase();
+          const role = String(l.role || "").toLowerCase();
+          const status = (l.ativo === true) ? "ativo" : (l.ativo === false ? "inativo" : "");
+          const userId = String(l.userId ?? "").toLowerCase();
+
+          return (
+            usuario.includes(q) ||
+            resultado.includes(q) ||
+            ip.includes(q) ||
+            role.includes(q) ||
+            status.includes(q) ||
+            userId.includes(q)
+          );
+        });
+      }
+
+      page = 1;
+      render();
+    }
+
+    function paginar(arr, page, pageSize) {
+      const total = arr.length;
+      const totalPages = Math.max(1, Math.ceil(total / pageSize));
+      const p = Math.min(Math.max(1, page), totalPages);
+      const start = (p - 1) * pageSize;
+      const end = start + pageSize;
+      return {
+        page: p,
+        total,
+        totalPages,
+        items: arr.slice(start, end),
+        startIndex: total ? start + 1 : 0,
+        endIndex: Math.min(end, total),
+      };
+    }
+
+    function render() {
+      const tbody = document.getElementById("tbodyLogs");
+
+      const pg = paginar(logsFiltrados, page, pageSize);
+      page = pg.page;
+
+      document.getElementById("lblContagem").innerText = `${pg.total} resultado(s)`;
+      document.getElementById("lblPagina").innerText = `Página ${pg.page} de ${pg.totalPages}`;
+      document.getElementById("lblResumo").innerText = pg.total
+        ? `Mostrando ${pg.startIndex}–${pg.endIndex} de ${pg.total}`
+        : `Nenhum registro para exibir`;
+
+      document.getElementById("btnPrev").disabled = (pg.page <= 1);
+      document.getElementById("btnNext").disabled = (pg.page >= pg.totalPages);
+
+      if (!pg.items.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-muted">Nenhum registro encontrado.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = "";
+      pg.items.forEach(l => {
+        const ua = String(l.userAgent || "");
+        const uaShort = ua.length > 60 ? ua.slice(0, 60) + "..." : ua;
+
+        tbody.innerHTML += `
+          <tr>
+            <td class="nowrap">${formatarDataISO(l.dataHora)}</td>
+            <td>${l.usuarioInformado || "-"}</td>
+            <td>${badgeResultado(l.resultado)}</td>
+            <td>${badgeStatus(l.ativo)}</td>
+            <td>${l.role || "-"}</td>
+            <td class="mono">${l.ip || "-"}</td>
+            <td>${l.userId ?? "-"}</td>
+            <td title="${ua.replaceAll('"', '&quot;')}">${uaShort.replaceAll("<", "&lt;")}</td>
+          </tr>
+        `;
+      });
+    }
+
+    async function carregarLogs() {
+      const tbody = document.getElementById("tbodyLogs");
+      tbody.innerHTML = `<tr><td colspan="8" class="text-muted">Carregando...</td></tr>`;
+
+      const res = await authFetch(API_LOGS);
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        showError(`Erro ao carregar logs (${res.status}). ${txt || ""}`);
+        tbody.innerHTML = `<tr><td colspan="8" class="text-danger">Erro ao carregar logs</td></tr>`;
+        return;
+      }
+
+      const data = await res.json().catch(() => []);
+      logsOriginais = Array.isArray(data) ? data : [];
+      logsFiltrados = [...logsOriginais];
+
+      render();
+    }
+
+    document.getElementById("btnRecarregar").addEventListener("click", carregarLogs);
+    document.getElementById("btnPrev").addEventListener("click", () => { page--; render(); });
+    document.getElementById("btnNext").addEventListener("click", () => { page++; render(); });
+
+    document.getElementById("txtFiltro").addEventListener("input", aplicarFiltro);
+
+    document.getElementById("btnLimpar").addEventListener("click", () => {
+      document.getElementById("txtFiltro").value = "";
+      aplicarFiltro();
+    });
+
+    document.getElementById("selPageSize").addEventListener("change", (e) => {
+      pageSize = parseInt(e.target.value, 10) || 25;
+      page = 1;
+      render();
+    });
+
+    document.getElementById("logoutBtn").onclick = logout;
+
+    async function iniciar() {
+      marcarMenuAtivo();
+
+      const ok = await exigirAdmin();
+      if (!ok) return;
+
+      await carregarUsuarioLogado();
+      await carregarLogs();
+    }
+
+    iniciar();
+  </script>
+
+</body>
+</html>
