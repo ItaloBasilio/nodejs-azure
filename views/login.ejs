@@ -105,11 +105,18 @@
     }
 })();
 
+function mostrarErro(msg) {
+    const erroDiv = document.getElementById("erro");
+    erroDiv.innerText = msg;
+    erroDiv.classList.remove("d-none");
+}
+
 document.getElementById("loginForm").addEventListener("submit", async function(e){
     e.preventDefault();
 
     const usuario = document.getElementById("usuario").value.trim();
     const senha = document.getElementById("senha").value;
+
     const erroDiv = document.getElementById("erro");
     const erroApiDiv = document.getElementById("erroApi");
 
@@ -142,8 +149,18 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
             return;
         }
 
-        // credenciais inválidas
-        erroDiv.classList.remove("d-none");
+        // ✅ usuário desativado (backend deve devolver 403)
+        if (response.status === 403) {
+            // prioriza mensagem do backend se vier
+            const msg = data?.message || data?.error || "Usuário desativado. Entrar em contato com o Administrador.";
+            mostrarErro(msg);
+            return;
+        }
+
+        // ✅ outras falhas: usa mensagem do backend se existir
+        const msg = data?.message || data?.error || "Usuário ou senha inválidos";
+        mostrarErro(msg);
+
     } catch (err) {
         console.error("Erro ao tentar logar:", err);
         erroApiDiv.classList.remove("d-none");

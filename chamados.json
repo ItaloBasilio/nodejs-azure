@@ -105,5 +105,32 @@
         "enviadoPor": "Ricardo"
       }
     ]
+  },
+  {
+    "id": "1772107835530",
+    "titulo": "Trocar fonte do Notebook",
+    "cliente": "Shempo",
+    "categoria": "Suporte Técnico > Problemas com computador / notebook",
+    "descricao": "Olá, preciso por favor que o técnico realize a troca da fonte do meu notebook.",
+    "prioridade": "Média",
+    "solicitante": "Adriana",
+    "status": "Em Atendimento",
+    "dataCriacao": "2026-02-26T12:10:35.530Z",
+    "criadoPor": "Admin",
+    "interacoes": [
+      {
+        "data": "2026-02-26T12:11:28.686Z",
+        "autor": "Admin",
+        "role": "admin",
+        "mensagem": "Teste de interação"
+      },
+      {
+        "data": "2026-02-26T12:11:46.119Z",
+        "autor": "Ricardo",
+        "role": "analista",
+        "mensagem": "Atuando nesse chamado"
+      }
+    ],
+    "anexos": []
   }
 ]

@@ -13,7 +13,8 @@
     "usuario": "italo",
     "senha": "1",
     "role": "analista",
-    "ativo": true
+    "ativo": true,
+    "atualizadoEm": "2026-02-26T12:24:22.627Z"
   },
   {
     "id": 1772050070732,
@@ -21,7 +22,7 @@
     "usuario": "ricardo",
     "senha": "1",
     "role": "analista",
-    "ativo": false,
-    "atualizadoEm": "2026-02-26T11:55:04.064Z"
+    "ativo": true,
+    "atualizadoEm": "2026-02-26T12:09:00.357Z"
   }
 ]
