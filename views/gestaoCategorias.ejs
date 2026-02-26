@@ -21,6 +21,8 @@
     }
     .sidebar a:hover { background-color: #343a40; color: #fff; }
     .sidebar .active { background-color: #343a40; color: #fff; }
+
+    .filter-hint { font-size: .9rem; }
   </style>
 </head>
 
@@ -101,6 +103,36 @@
           </div>
 
           <div class="card-body">
+
+            <!-- ✅ FILTRO -->
+            <div class="row g-2 align-items-end mb-3">
+              <div class="col-md-6">
+                <label class="form-label mb-1">Pesquisar</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-search"></i></span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="filtroCategorias"
+                    placeholder="Digite grupo, categoria, status ou ID..."
+                    autocomplete="off"
+                  >
+                  <button class="btn btn-outline-secondary" type="button" id="btnLimparFiltroCategorias">
+                    Limpar
+                  </button>
+                </div>
+                <div class="text-muted filter-hint mt-1">
+                  Busca em: <strong>ID</strong>, <strong>Grupo</strong>, <strong>Categoria</strong>, <strong>Status</strong>
+                </div>
+              </div>
+
+              <div class="col-md-6 text-md-end">
+                <div class="text-muted">
+                  <span id="contadorCategorias">0</span> resultado(s)
+                </div>
+              </div>
+            </div>
+
             <div class="table-responsive">
               <table class="table table-hover align-middle">
                 <thead>
@@ -316,12 +348,76 @@
       modalEditar.show();
     }
 
+    /* ✅ FILTRO (client-side) */
+    function normalizarTexto(s) {
+      return (s || "")
+        .toString()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    }
+
+    function aplicarFiltroCategorias() {
+      const input = document.getElementById("filtroCategorias");
+      const termo = normalizarTexto(input?.value || "");
+      const tbody = document.getElementById("tbodyCategorias");
+      const contador = document.getElementById("contadorCategorias");
+      if (!tbody) return;
+
+      const linhas = Array.from(tbody.querySelectorAll("tr[data-search]"));
+      if (!linhas.length) {
+        if (contador) contador.innerText = "0";
+        return;
+      }
+
+      let visiveis = 0;
+      linhas.forEach(tr => {
+        const hay = tr.getAttribute("data-search") || "";
+        const match = !termo || hay.includes(termo);
+        tr.classList.toggle("d-none", !match);
+        if (match) visiveis++;
+      });
+
+      if (contador) contador.innerText = String(visiveis);
+
+      const avisoId = "linhaSemResultadosCategorias";
+      let aviso = document.getElementById(avisoId);
+      if (!visiveis) {
+        if (!aviso) {
+          aviso = document.createElement("tr");
+          aviso.id = avisoId;
+          aviso.innerHTML = `<td colspan="4" class="text-muted">Nenhuma categoria encontrada para o filtro atual.</td>`;
+          tbody.appendChild(aviso);
+        } else {
+          aviso.classList.remove("d-none");
+        }
+      } else {
+        if (aviso) aviso.classList.add("d-none");
+      }
+    }
+
+    function prepararFiltroCategorias() {
+      const input = document.getElementById("filtroCategorias");
+      const btnLimpar = document.getElementById("btnLimparFiltroCategorias");
+      if (!input || !btnLimpar) return;
+
+      input.addEventListener("input", aplicarFiltroCategorias);
+      btnLimpar.addEventListener("click", () => {
+        input.value = "";
+        input.focus();
+        aplicarFiltroCategorias();
+      });
+    }
+
     async function carregarCategorias() {
       const tbody = document.getElementById("tbodyCategorias");
 
       const res = await authFetch(API);
       if (!res.ok) {
         tbody.innerHTML = `<tr><td colspan="4" class="text-danger">Erro ao carregar categorias</td></tr>`;
+        const contador = document.getElementById("contadorCategorias");
+        if (contador) contador.innerText = "0";
         return;
       }
 
@@ -335,24 +431,29 @@
 
       if (!categorias.length) {
         tbody.innerHTML = `<tr><td colspan="4" class="text-muted">Nenhuma categoria cadastrada.</td></tr>`;
+        const contador = document.getElementById("contadorCategorias");
+        if (contador) contador.innerText = "0";
         return;
       }
 
       tbody.innerHTML = "";
       categorias.forEach(c => {
         const ativa = c.ativa === true;
+        const statusTxt = ativa ? "Ativa" : "Inativa";
 
         const payload = JSON.stringify({
           id: c.id, grupo: c.grupo, nome: c.nome, ativa: ativa
         }).replace(/'/g, "&apos;");
 
+        const search = normalizarTexto(`${c.id} ${c.grupo} ${c.nome} ${statusTxt}`);
+
         tbody.innerHTML += `
-          <tr>
+          <tr data-search="${search}">
             <td>${c.grupo}</td>
             <td>${c.nome}</td>
             <td>
               <span class="badge ${ativa ? "bg-success" : "bg-secondary"}">
-                ${ativa ? "Ativa" : "Inativa"}
+                ${statusTxt}
               </span>
             </td>
             <td>
@@ -375,6 +476,9 @@
           </tr>
         `;
       });
+
+      // ✅ aplica filtro atual (se já estiver digitado)
+      aplicarFiltroCategorias();
     }
 
     async function deletarCategoria(id) {
@@ -496,6 +600,9 @@
       if (!ok) return;
 
       await carregarUsuarioLogado();
+
+      prepararFiltroCategorias(); // ✅ habilita filtro
+
       await carregarGruposSelects(); // ✅ carrega lista no select
       await carregarCategorias();
     }

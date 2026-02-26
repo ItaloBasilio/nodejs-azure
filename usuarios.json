@@ -4,20 +4,24 @@
     "nome": "Admin",
     "usuario": "admin",
     "senha": "1",
-    "role": "admin"
+    "role": "admin",
+    "ativo": true
   },
   {
     "id": 1772033332489,
     "nome": "Italo",
     "usuario": "italo",
     "senha": "1",
-    "role": "analista"
+    "role": "analista",
+    "ativo": true
   },
   {
     "id": 1772050070732,
     "nome": "Ricardo",
     "usuario": "ricardo",
     "senha": "1",
-    "role": "analista"
+    "role": "analista",
+    "ativo": false,
+    "atualizadoEm": "2026-02-26T11:55:04.064Z"
   }
 ]

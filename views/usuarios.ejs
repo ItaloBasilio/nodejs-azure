@@ -21,6 +21,8 @@
         }
         .sidebar a:hover { background-color: #343a40; color: #fff; }
         .sidebar .active { background-color: #343a40; color: #fff; }
+
+        .filter-hint { font-size: .9rem; }
     </style>
 </head>
 
@@ -109,6 +111,36 @@
                 </div>
 
                 <div class="card-body">
+
+                    <!-- ✅ FILTRO -->
+                    <div class="row g-2 align-items-end mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label mb-1">Pesquisar</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="filtroUsuarios"
+                                    placeholder="Digite nome, usuário, role, status ou ID..."
+                                    autocomplete="off"
+                                >
+                                <button class="btn btn-outline-secondary" type="button" id="btnLimparFiltroUsuarios">
+                                    Limpar
+                                </button>
+                            </div>
+                            <div class="text-muted filter-hint mt-1">
+                                Busca em: <strong>ID</strong>, <strong>Nome</strong>, <strong>Usuário</strong>, <strong>Role</strong>, <strong>Status</strong>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 text-md-end">
+                            <div class="text-muted">
+                                <span id="contadorUsuarios">0</span> resultado(s)
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
                             <thead>
@@ -116,13 +148,14 @@
                                 <th>ID</th>
                                 <th>Nome</th>
                                 <th>Usuário</th>
+                                <th>Status</th>
                                 <th style="width: 240px;">Role</th>
-                                <th style="width: 380px;">Ações</th>
+                                <th style="width: 520px;">Ações</th>
                             </tr>
                             </thead>
                             <tbody id="tbodyUsuarios">
                             <tr>
-                                <td colspan="5" class="text-muted">Carregando...</td>
+                                <td colspan="6" class="text-muted">Carregando...</td>
                             </tr>
                             </tbody>
                         </table>
@@ -177,6 +210,9 @@
 
 <script>
     const API_USUARIOS = "/api/usuarios";
+    // ✅ novo endpoint sugerido (mesma ideia do toggle do grupo)
+    const API_USUARIOS_ATIVO = (id) => `/api/usuarios/${id}/ativo`;
+
     const modalSenhaEl = document.getElementById("modalSenha");
     const modalSenha = new bootstrap.Modal(modalSenhaEl);
 
@@ -237,9 +273,74 @@
         }
     }
 
+    /* ✅ FILTRO (client-side) */
+    function normalizarTexto(s) {
+        return (s || "")
+            .toString()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .trim();
+    }
+
+    function aplicarFiltroUsuarios() {
+        const input = document.getElementById("filtroUsuarios");
+        const termo = normalizarTexto(input?.value || "");
+        const tbody = document.getElementById("tbodyUsuarios");
+        const contador = document.getElementById("contadorUsuarios");
+        if (!tbody) return;
+
+        const linhas = Array.from(tbody.querySelectorAll("tr[data-search]"));
+        if (!linhas.length) {
+            if (contador) contador.innerText = "0";
+            return;
+        }
+
+        let visiveis = 0;
+        linhas.forEach(tr => {
+            const hay = tr.getAttribute("data-search") || "";
+            const match = !termo || hay.includes(termo);
+            tr.classList.toggle("d-none", !match);
+            if (match) visiveis++;
+        });
+
+        if (contador) contador.innerText = String(visiveis);
+
+        const avisoId = "linhaSemResultadosUsuarios";
+        let aviso = document.getElementById(avisoId);
+        if (!visiveis) {
+            if (!aviso) {
+                aviso = document.createElement("tr");
+                aviso.id = avisoId;
+                aviso.innerHTML = `<td colspan="6" class="text-muted">Nenhum usuário encontrado para o filtro atual.</td>`;
+                tbody.appendChild(aviso);
+            } else {
+                aviso.classList.remove("d-none");
+            }
+        } else {
+            if (aviso) aviso.classList.add("d-none");
+        }
+    }
+
+    function prepararFiltroUsuarios() {
+        const input = document.getElementById("filtroUsuarios");
+        const btnLimpar = document.getElementById("btnLimparFiltroUsuarios");
+        if (!input || !btnLimpar) return;
+
+        input.addEventListener("input", aplicarFiltroUsuarios);
+        btnLimpar.addEventListener("click", () => {
+            input.value = "";
+            input.focus();
+            aplicarFiltroUsuarios();
+        });
+    }
+
     async function carregarUsuarios() {
         const tbody = document.getElementById("tbodyUsuarios");
-        tbody.innerHTML = `<tr><td colspan="5" class="text-muted">Carregando...</td></tr>`;
+        const contador = document.getElementById("contadorUsuarios");
+
+        tbody.innerHTML = `<tr><td colspan="6" class="text-muted">Carregando...</td></tr>`;
+        if (contador) contador.innerText = "0";
 
         const res = await authFetch(API_USUARIOS);
 
@@ -247,7 +348,7 @@
             const txt = await res.text().catch(() => "");
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="5" class="text-danger">
+                    <td colspan="6" class="text-danger">
                         Erro ao carregar usuários (${res.status}). ${txt ? "Detalhe: " + txt : ""}
                     </td>
                 </tr>`;
@@ -256,7 +357,7 @@
 
         const usuarios = await res.json().catch(() => []);
         if (!usuarios || usuarios.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-muted">Nenhum usuário cadastrado.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-muted">Nenhum usuário cadastrado.</td></tr>`;
             return;
         }
 
@@ -266,11 +367,23 @@
         usuarios.forEach(u => {
             const isSelf = String(u.id) === myId;
 
+            // ✅ se não existir "ativo" no seu JSON, vamos assumir true
+            const ativo = (u.ativo !== false);
+            const statusTxt = ativo ? "Ativo" : "Inativo";
+
+            const search = normalizarTexto(`${u.id} ${u.nome} ${u.usuario} ${u.role} ${statusTxt}`);
+
             tbody.innerHTML += `
-                <tr>
+                <tr data-search="${search}">
                     <td>${u.id}</td>
                     <td>${u.nome}</td>
                     <td>${u.usuario}</td>
+
+                    <td>
+                        <span class="badge ${ativo ? "bg-success" : "bg-secondary"}">
+                            ${statusTxt}
+                        </span>
+                    </td>
 
                     <td>
                         <div class="d-flex align-items-center gap-2 flex-nowrap" style="white-space: nowrap;">
@@ -293,6 +406,14 @@
                     <td class="d-flex gap-2 flex-wrap">
                         ${isSelf ? `<span class="badge bg-secondary align-self-center">você</span>` : ``}
 
+                        <!-- ✅ NOVO BOTÃO: Ativar/Inativar -->
+                        <button class="btn btn-sm btn-outline-warning" type="button"
+                            ${isSelf ? "disabled" : ""}
+                            onclick="toggleAtivoUsuario('${u.id}', ${ativo ? "false" : "true"}, '${u.usuario}')">
+                            <i class="bi bi-toggle-${ativo ? "on" : "off"}"></i>
+                            ${ativo ? "Inativar" : "Ativar"}
+                        </button>
+
                         <button class="btn btn-sm btn-outline-primary" type="button"
                             onclick="abrirModalSenha('${u.id}', '${u.usuario}')">
                             <i class="bi bi-key"></i> Alterar senha
@@ -307,6 +428,8 @@
                 </tr>
             `;
         });
+
+        aplicarFiltroUsuarios();
     }
 
     window.abrirModalSenha = function(id, usuario) {
@@ -356,6 +479,29 @@
         }
 
         showSuccess("Role alterada com sucesso!");
+        await carregarUsuarios();
+    }
+
+    // ✅ NOVO: Ativar/Inativar usuário (precisa existir no back: PUT /api/usuarios/:id/ativo)
+    window.toggleAtivoUsuario = async function(id, ativo, usuario) {
+        const acao = ativo ? "Ativar" : "Inativar";
+        const ok = confirm(`${acao} o usuário "${usuario}"?`);
+        if (!ok) return;
+
+        const res = await authFetch(API_USUARIOS_ATIVO(id), {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ativo })
+        });
+
+        const data = await res.json().catch(() => null);
+        if (!res.ok) {
+            // se o endpoint não existir, vai cair aqui
+            showError(data?.error || data?.message || `Erro ao ${acao.toLowerCase()} usuário (${res.status}).`);
+            return;
+        }
+
+        showSuccess(`Usuário ${ativo ? "ativado" : "inativado"} com sucesso!`);
         await carregarUsuarios();
     }
 
@@ -429,6 +575,9 @@
         if (!ok) return;
 
         await carregarUsuarioLogado();
+
+        prepararFiltroUsuarios(); // ✅ filtro
+
         await carregarUsuarios();
     }
 

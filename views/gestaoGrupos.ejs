@@ -21,6 +21,8 @@
     }
     .sidebar a:hover { background-color: #343a40; color: #fff; }
     .sidebar .active { background-color: #343a40; color: #fff; }
+
+    .filter-hint { font-size: .9rem; }
   </style>
 </head>
 
@@ -90,6 +92,36 @@
           </div>
 
           <div class="card-body">
+
+            <!-- ✅ FILTRO -->
+            <div class="row g-2 align-items-end mb-3">
+              <div class="col-md-6">
+                <label class="form-label mb-1">Pesquisar</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-search"></i></span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="filtroGrupos"
+                    placeholder="Digite grupo, status ou ID..."
+                    autocomplete="off"
+                  >
+                  <button class="btn btn-outline-secondary" type="button" id="btnLimparFiltroGrupos">
+                    Limpar
+                  </button>
+                </div>
+                <div class="text-muted filter-hint mt-1">
+                  Busca em: <strong>ID</strong>, <strong>Grupo</strong>, <strong>Status</strong>
+                </div>
+              </div>
+
+              <div class="col-md-6 text-md-end">
+                <div class="text-muted">
+                  <span id="contadorGrupos">0</span> resultado(s)
+                </div>
+              </div>
+            </div>
+
             <div class="table-responsive">
               <table class="table table-hover align-middle">
                 <thead>
@@ -236,12 +268,76 @@
       modalEditar.show();
     }
 
+    /* ✅ FILTRO (client-side) */
+    function normalizarTexto(s) {
+      return (s || "")
+        .toString()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    }
+
+    function aplicarFiltroGrupos() {
+      const input = document.getElementById("filtroGrupos");
+      const termo = normalizarTexto(input?.value || "");
+      const tbody = document.getElementById("tbodyGrupos");
+      const contador = document.getElementById("contadorGrupos");
+      if (!tbody) return;
+
+      const linhas = Array.from(tbody.querySelectorAll("tr[data-search]"));
+      if (!linhas.length) {
+        if (contador) contador.innerText = "0";
+        return;
+      }
+
+      let visiveis = 0;
+      linhas.forEach(tr => {
+        const hay = tr.getAttribute("data-search") || "";
+        const match = !termo || hay.includes(termo);
+        tr.classList.toggle("d-none", !match);
+        if (match) visiveis++;
+      });
+
+      if (contador) contador.innerText = String(visiveis);
+
+      const avisoId = "linhaSemResultadosGrupos";
+      let aviso = document.getElementById(avisoId);
+      if (!visiveis) {
+        if (!aviso) {
+          aviso = document.createElement("tr");
+          aviso.id = avisoId;
+          aviso.innerHTML = `<td colspan="3" class="text-muted">Nenhum grupo encontrado para o filtro atual.</td>`;
+          tbody.appendChild(aviso);
+        } else {
+          aviso.classList.remove("d-none");
+        }
+      } else {
+        if (aviso) aviso.classList.add("d-none");
+      }
+    }
+
+    function prepararFiltroGrupos() {
+      const input = document.getElementById("filtroGrupos");
+      const btnLimpar = document.getElementById("btnLimparFiltroGrupos");
+      if (!input || !btnLimpar) return;
+
+      input.addEventListener("input", aplicarFiltroGrupos);
+      btnLimpar.addEventListener("click", () => {
+        input.value = "";
+        input.focus();
+        aplicarFiltroGrupos();
+      });
+    }
+
     async function carregarGrupos() {
       const tbody = document.getElementById("tbodyGrupos");
+      const contador = document.getElementById("contadorGrupos");
 
       const res = await authFetch(API);
       if (!res.ok) {
         tbody.innerHTML = `<tr><td colspan="3" class="text-danger">Erro ao carregar grupos</td></tr>`;
+        if (contador) contador.innerText = "0";
         return;
       }
 
@@ -251,23 +347,27 @@
 
       if (!grupos.length) {
         tbody.innerHTML = `<tr><td colspan="3" class="text-muted">Nenhum grupo cadastrado.</td></tr>`;
+        if (contador) contador.innerText = "0";
         return;
       }
 
       tbody.innerHTML = "";
       grupos.forEach(g => {
         const ativo = g.ativo === true;
+        const statusTxt = ativo ? "Ativo" : "Inativo";
 
         const payload = JSON.stringify({
           id: g.id, nome: g.nome, ativo: ativo
         }).replace(/'/g, "&apos;");
 
+        const search = normalizarTexto(`${g.id} ${g.nome} ${statusTxt}`);
+
         tbody.innerHTML += `
-          <tr>
+          <tr data-search="${search}">
             <td>${g.nome}</td>
             <td>
               <span class="badge ${ativo ? "bg-success" : "bg-secondary"}">
-                ${ativo ? "Ativo" : "Inativo"}
+                ${statusTxt}
               </span>
             </td>
             <td>
@@ -290,6 +390,9 @@
           </tr>
         `;
       });
+
+      // ✅ aplica filtro atual (se já estiver digitado)
+      aplicarFiltroGrupos();
     }
 
     async function deletarGrupo(id) {
@@ -398,6 +501,9 @@
       if (!ok) return;
 
       await carregarUsuarioLogado();
+
+      prepararFiltroGrupos(); // ✅ habilita filtro
+
       await carregarGrupos();
     }
 

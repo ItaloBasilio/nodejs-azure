@@ -12,7 +12,7 @@ const usuariosPath = path.join(__dirname, "../usuarios.json");
    HELPERS
 ================================= */
 
-function lerUsuarios() {
+function garantirArquivo() {
   if (!fs.existsSync(usuariosPath)) {
     // cria arquivo inicial com admin padrão
     fs.writeFileSync(
@@ -25,6 +25,8 @@ function lerUsuarios() {
             usuario: "admin",
             senha: "1234",
             role: "admin",
+            ativo: true,
+            criadoEm: new Date().toISOString(),
           },
         ],
         null,
@@ -32,8 +34,38 @@ function lerUsuarios() {
       )
     );
   }
+}
 
-  return JSON.parse(fs.readFileSync(usuariosPath, "utf8"));
+function normalizarUsuarios(usuarios) {
+  // garante campo "ativo" para dados antigos
+  let mudou = false;
+
+  const normalizados = (usuarios || []).map((u) => {
+    const novo = { ...u };
+
+    if (typeof novo.ativo !== "boolean") {
+      novo.ativo = true;
+      mudou = true;
+    }
+
+    return novo;
+  });
+
+  return { normalizados, mudou };
+}
+
+function lerUsuarios() {
+  garantirArquivo();
+
+  const raw = JSON.parse(fs.readFileSync(usuariosPath, "utf8"));
+  const { normalizados, mudou } = normalizarUsuarios(raw);
+
+  // se faltava "ativo" em algum usuário antigo, salva de volta
+  if (mudou) {
+    salvarUsuarios(normalizados);
+  }
+
+  return normalizados;
 }
 
 function salvarUsuarios(usuarios) {
@@ -72,6 +104,9 @@ router.get("/", somenteAdmin, (req, res) => {
     nome: u.nome,
     usuario: u.usuario,
     role: u.role,
+    ativo: u.ativo === true,
+    criadoEm: u.criadoEm,
+    atualizadoEm: u.atualizadoEm,
   }));
 
   res.json(usuariosSafe);
@@ -114,6 +149,8 @@ router.post("/", somenteAdmin, (req, res) => {
     usuario: String(usuario).trim(),
     senha: String(senha), // futuramente: hash
     role,
+    ativo: true,
+    criadoEm: new Date().toISOString(),
   };
 
   usuariosDb.push(novoUsuario);
@@ -126,6 +163,7 @@ router.post("/", somenteAdmin, (req, res) => {
       nome: novoUsuario.nome,
       usuario: novoUsuario.usuario,
       role: novoUsuario.role,
+      ativo: novoUsuario.ativo,
     },
   });
 });
@@ -150,6 +188,7 @@ router.put("/:id/senha", somenteAdmin, (req, res) => {
   }
 
   usuariosDb[idx].senha = String(senha);
+  usuariosDb[idx].atualizadoEm = new Date().toISOString();
   salvarUsuarios(usuariosDb);
 
   return res.json({ message: "Senha alterada com sucesso" });
@@ -190,6 +229,7 @@ router.put("/:id/role", somenteAdmin, (req, res) => {
   }
 
   usuariosDb[idx].role = role;
+  usuariosDb[idx].atualizadoEm = new Date().toISOString();
   salvarUsuarios(usuariosDb);
 
   return res.json({
@@ -199,6 +239,50 @@ router.put("/:id/role", somenteAdmin, (req, res) => {
       nome: usuariosDb[idx].nome,
       usuario: usuariosDb[idx].usuario,
       role: usuariosDb[idx].role,
+      ativo: usuariosDb[idx].ativo === true,
+    },
+  });
+});
+
+/**
+ * ✅ PUT /:id/ativo
+ * Ativar/Inativar usuário (admin apenas)
+ * Body: { "ativo": true|false }
+ */
+router.put("/:id/ativo", somenteAdmin, (req, res) => {
+  const { id } = req.params;
+  const { ativo } = req.body;
+
+  if (typeof ativo !== "boolean") {
+    return res.status(400).json({ error: "Informe o campo ativo (true/false)" });
+  }
+
+  const usuariosDb = lerUsuarios();
+  const idx = usuariosDb.findIndex((u) => String(u.id) === String(id));
+
+  if (idx === -1) {
+    return res.status(404).json({ error: "Usuário não encontrado" });
+  }
+
+  // ❗ Segurança: impede admin de se inativar
+  if (String(usuariosDb[idx].id) === String(req.usuario.id)) {
+    return res.status(400).json({
+      error: "Não é permitido inativar o próprio usuário",
+    });
+  }
+
+  usuariosDb[idx].ativo = ativo;
+  usuariosDb[idx].atualizadoEm = new Date().toISOString();
+  salvarUsuarios(usuariosDb);
+
+  return res.json({
+    message: `Usuário ${ativo ? "ativado" : "inativado"} com sucesso`,
+    usuario: {
+      id: usuariosDb[idx].id,
+      nome: usuariosDb[idx].nome,
+      usuario: usuariosDb[idx].usuario,
+      role: usuariosDb[idx].role,
+      ativo: usuariosDb[idx].ativo === true,
     },
   });
 });
@@ -234,6 +318,7 @@ router.delete("/:id", somenteAdmin, (req, res) => {
       nome: removido.nome,
       usuario: removido.usuario,
       role: removido.role,
+      ativo: removido.ativo === true,
     },
   });
 });
