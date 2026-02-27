@@ -23,6 +23,11 @@ router.get("/chamados", function (req, res) {
   res.render("chamados");
 });
 
+// ✅ NOVA ROTA: MEUS CHAMADOS (visível para admin e analista)
+router.get("/meus-chamados", function (req, res) {
+  res.render("meus-chamados");
+});
+
 router.get("/novo-chamado", function (req, res) {
   res.render("novo-chamado");
 });
@@ -59,7 +64,6 @@ router.get("/gestao-grupos", function (req, res) {
 router.get("/gestao-logs-login", function (req, res) {
   res.render("gestao-logs-login");
 });
-
 
 router.get("/gestao-bloqueios-login", function (req, res) {
   res.render("gestao-bloqueios-login");

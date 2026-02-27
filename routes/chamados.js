@@ -37,7 +37,9 @@ const storage = multer.diskStorage({
 // Filtro de tipos permitidos
 function fileFilter(req, file, cb) {
   const tiposPermitidos = /jpeg|jpg|png|pdf/;
-  const extname = tiposPermitidos.test(path.extname(file.originalname).toLowerCase());
+  const extname = tiposPermitidos.test(
+    path.extname(file.originalname).toLowerCase()
+  );
   const mimetype = tiposPermitidos.test(file.mimetype);
 
   if (extname && mimetype) {
@@ -58,6 +60,9 @@ const upload = multer({
 // ROTAS
 // =============================
 
+// ✅ Meus chamados (PRECISA vir ANTES de "/:id")
+router.get("/meus", chamadosController.listarMeusChamados);
+
 // Listar todos
 router.get("/", chamadosController.listarChamados);
 
@@ -68,7 +73,11 @@ router.get("/:id", chamadosController.buscarChamadoPorId);
 router.post("/", upload.array("anexos", 5), chamadosController.criarChamado);
 
 // Adicionar anexo em chamado existente
-router.post("/:id/anexo", upload.array("anexos", 5), chamadosController.adicionarAnexo);
+router.post(
+  "/:id/anexo",
+  upload.array("anexos", 5),
+  chamadosController.adicionarAnexo
+);
 
 // Atualizar chamado
 router.put("/:id", chamadosController.atualizarChamado);

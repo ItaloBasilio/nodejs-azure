@@ -17,8 +17,44 @@ function salvarChamados(chamados) {
 
 // helper: usuário vem do JWT middleware (authJwt)
 function getUsuario(req) {
-  return req.usuario || { nome: "Desconhecido", role: "analista" };
+  return req.usuario || { nome: "Desconhecido", role: "analista", id: null };
 }
+
+function normalizarTexto(s) {
+  return (s || "")
+    .toString()
+    .trim()
+    .toLowerCase();
+}
+
+// =============================
+// ✅ MEUS CHAMADOS (NOVO)
+// =============================
+/**
+ * GET /api/chamados/meus
+ * Retorna somente os chamados abertos pelo usuário logado.
+ *
+ * Regra:
+ * - Admin: vê apenas os chamados que ELE abriu (criadoPor = nome do admin)
+ * - Analista: vê apenas os chamados que ELE abriu (criadoPor = nome do usuário)
+ *
+ * Observação: seu criarChamado salva "criadoPor: usuario.nome".
+ * Então a forma mais fiel é filtrar por "criadoPor".
+ */
+exports.listarMeusChamados = (req, res) => {
+  const usuario = getUsuario(req);
+  const chamados = lerChamados();
+
+  const meuNome = normalizarTexto(usuario.nome);
+
+  const meus = chamados.filter((c) => {
+    const criadoPor = normalizarTexto(c?.criadoPor);
+    return criadoPor && criadoPor === meuNome;
+  });
+
+  meus.sort((a, b) => Number(b.id) - Number(a.id));
+  res.json(meus);
+};
 
 // =============================
 // LISTAR TODOS
@@ -82,7 +118,7 @@ exports.criarChamado = (req, res) => {
     solicitante: String(solicitante).trim(),
     status: "Aberto",
     dataCriacao: new Date().toISOString(),
-    criadoPor: usuario.nome,
+    criadoPor: usuario.nome, // ✅ base para "Meus Chamados"
     interacoes: [],
     anexos,
   };

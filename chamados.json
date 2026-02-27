@@ -138,5 +138,19 @@
       }
     ],
     "anexos": []
+  },
+  {
+    "id": "1772194780804",
+    "titulo": "Problemas para acessar o email",
+    "cliente": "New Life Hotel",
+    "categoria": "Acesso e Permissões > Acesso a e-mail corporativo",
+    "descricao": "Colaborador informa problemas para acessar o email. Reporta que a senha está incorreta.",
+    "prioridade": "Baixa",
+    "solicitante": "Juliana",
+    "status": "Aberto",
+    "dataCriacao": "2026-02-27T12:19:40.804Z",
+    "criadoPor": "Italo",
+    "interacoes": [],
+    "anexos": []
   }
 ]
