@@ -79,7 +79,7 @@
     "descricao": "Olá, preciso por favor que o técnico realize a troca da fonte do meu notebook.",
     "prioridade": "Média",
     "solicitante": "Adriana",
-    "status": "Em Atendimento",
+    "status": "Resolvido",
     "dataCriacao": "2026-02-26T12:10:35.530Z",
     "criadoPor": "Admin",
     "interacoes": [
@@ -124,7 +124,7 @@
     "cliente": "TX Capital",
     "categoria": "Segurança da Informação > Atualização de antivírus",
     "descricao": "Colaborador entrou em contato solicitando suporte para atualizar o antivirus",
-    "prioridade": "Baixa",
+    "prioridade": "Crítica",
     "solicitante": "Carla",
     "status": "Aberto",
     "dataCriacao": "2026-02-27T16:58:42.432Z",
@@ -138,9 +138,9 @@
     "cliente": "New Life Hotel",
     "categoria": "Acesso e Permissões > Permissões de pastas",
     "descricao": "Por favor, preciso de um acesso a pasta comercial.",
-    "prioridade": "Baixa",
+    "prioridade": "Crítica",
     "solicitante": "Rafaela",
-    "status": "Resolvido",
+    "status": "Em Atendimento",
     "dataCriacao": "2026-02-27T19:27:31.224Z",
     "criadoPor": "Pietro Martinez",
     "interacoes": [
@@ -149,6 +149,12 @@
         "autor": "Pietro Martinez",
         "role": "analista",
         "mensagem": "Acesso liberado durante o acesso remoto."
+      },
+      {
+        "data": "2026-02-27T19:56:53.173Z",
+        "autor": "Pietro Martinez",
+        "role": "analista",
+        "mensagem": "Alterei a severidade, pois a usuaria informou que está causando impacto financeiro."
       }
     ],
     "anexos": []

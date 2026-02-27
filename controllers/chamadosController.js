@@ -2,11 +2,10 @@ const fs = require("fs");
 const path = require("path");
 
 const filePath = path.join(__dirname, "../chamados.json");
+const usuariosPath = path.join(__dirname, "../usuarios.json");
 
 function lerChamados() {
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, "[]");
-  }
+  if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, "[]");
   const data = fs.readFileSync(filePath);
   return JSON.parse(data);
 }
@@ -15,32 +14,27 @@ function salvarChamados(chamados) {
   fs.writeFileSync(filePath, JSON.stringify(chamados, null, 2));
 }
 
+function lerUsuarios() {
+  if (!fs.existsSync(usuariosPath)) return [];
+  try {
+    return JSON.parse(fs.readFileSync(usuariosPath, "utf8"));
+  } catch {
+    return [];
+  }
+}
+
 // helper: usuário vem do JWT middleware (authJwt)
 function getUsuario(req) {
   return req.usuario || { nome: "Desconhecido", role: "analista", id: null };
 }
 
 function normalizarTexto(s) {
-  return (s || "")
-    .toString()
-    .trim()
-    .toLowerCase();
+  return (s || "").toString().trim().toLowerCase();
 }
 
 // =============================
-// ✅ MEUS CHAMADOS (NOVO)
+// ✅ MEUS CHAMADOS
 // =============================
-/**
- * GET /api/chamados/meus
- * Retorna somente os chamados abertos pelo usuário logado.
- *
- * Regra:
- * - Admin: vê apenas os chamados que ELE abriu (criadoPor = nome do admin)
- * - Analista: vê apenas os chamados que ELE abriu (criadoPor = nome do usuário)
- *
- * Observação: seu criarChamado salva "criadoPor: usuario.nome".
- * Então a forma mais fiel é filtrar por "criadoPor".
- */
 exports.listarMeusChamados = (req, res) => {
   const usuario = getUsuario(req);
   const chamados = lerChamados();
@@ -72,25 +66,28 @@ exports.buscarChamadoPorId = (req, res) => {
   const chamados = lerChamados();
   const chamado = chamados.find((c) => c.id === req.params.id);
 
-  if (!chamado) {
-    return res.status(404).json({ error: "Chamado não encontrado" });
-  }
+  if (!chamado) return res.status(404).json({ error: "Chamado não encontrado" });
 
   if (!chamado.interacoes) chamado.interacoes = [];
   if (!chamado.anexos) chamado.anexos = [];
   if (!chamado.dataCriacao) chamado.dataCriacao = new Date().toISOString();
+
+  // ✅ compat: garante analistaResponsavel antigo
+  if (!chamado.analistaResponsavel) {
+    chamado.analistaResponsavel = chamado.criadoPor || null;
+  }
 
   res.json(chamado);
 };
 
 // =============================
 // CRIAR CHAMADO (COM ANEXOS)
+// ✅ agora salva analistaResponsavel = usuário logado
 // =============================
 exports.criarChamado = (req, res) => {
   const chamados = lerChamados();
   const usuario = getUsuario(req);
 
-  // validações básicas
   const { titulo, cliente, categoria, descricao, prioridade, solicitante } = req.body;
 
   if (!titulo || !cliente || !categoria || !descricao || !prioridade || !solicitante) {
@@ -111,14 +108,17 @@ exports.criarChamado = (req, res) => {
   const novoChamado = {
     id: Date.now().toString(),
     titulo: String(titulo).trim(),
-    cliente: String(cliente).trim(), // ✅ NOVO CAMPO
+    cliente: String(cliente).trim(),
     categoria: String(categoria).trim(),
     descricao: String(descricao).trim(),
     prioridade: String(prioridade).trim(),
     solicitante: String(solicitante).trim(),
     status: "Aberto",
     dataCriacao: new Date().toISOString(),
-    criadoPor: usuario.nome, // ✅ base para "Meus Chamados"
+
+    criadoPor: usuario.nome,
+    analistaResponsavel: usuario.nome, // ✅ NOVO: primeiro responsável = quem criou
+
     interacoes: [],
     anexos,
   };
@@ -131,16 +131,13 @@ exports.criarChamado = (req, res) => {
 
 // =============================
 // ADICIONAR ANEXO EM CHAMADO EXISTENTE
-// (admin e analista podem adicionar; só admin remove)
 // =============================
 exports.adicionarAnexo = (req, res) => {
   const chamados = lerChamados();
   const chamado = chamados.find((c) => c.id === req.params.id);
   const usuario = getUsuario(req);
 
-  if (!chamado) {
-    return res.status(404).json({ error: "Chamado não encontrado" });
-  }
+  if (!chamado) return res.status(404).json({ error: "Chamado não encontrado" });
 
   if (!chamado.anexos) chamado.anexos = [];
 
@@ -157,7 +154,6 @@ exports.adicionarAnexo = (req, res) => {
   }));
 
   chamado.anexos.push(...novosAnexos);
-
   salvarChamados(chamados);
 
   res.json({
@@ -167,53 +163,110 @@ exports.adicionarAnexo = (req, res) => {
 };
 
 // =============================
+// ✅ ATRIBUIR / ASSUMIR ANALISTA (NOVO)
+// PUT /api/chamados/:id/analista
+// - Admin pode atribuir para qualquer usuário existente
+// - Analista só pode assumir para ele mesmo
+// =============================
+exports.definirAnalistaResponsavel = (req, res) => {
+  const usuario = getUsuario(req);
+  const chamados = lerChamados();
+
+  const idx = chamados.findIndex((c) => c.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: "Chamado não encontrado" });
+
+  const chamadoAtual = chamados[idx];
+
+  const bodyNome = (req.body?.analistaResponsavel || "").toString().trim();
+
+  // ✅ analista: só pode assumir para si mesmo
+  if (usuario.role !== "admin") {
+    chamados[idx] = {
+      ...chamadoAtual,
+      analistaResponsavel: usuario.nome,
+    };
+    salvarChamados(chamados);
+
+    return res.json({
+      message: "Chamado assumido com sucesso",
+      chamado: chamados[idx],
+    });
+  }
+
+  // ✅ admin: pode escolher um nome (valida existir em usuarios.json)
+  if (!bodyNome) {
+    return res.status(400).json({ error: "Informe analistaResponsavel" });
+  }
+
+  const usuarios = lerUsuarios();
+  const existe = usuarios.find((u) => normalizarTexto(u?.nome) === normalizarTexto(bodyNome));
+
+  if (!existe) {
+    return res.status(400).json({ error: "Analista informado não existe em usuarios.json" });
+  }
+
+  chamados[idx] = {
+    ...chamadoAtual,
+    analistaResponsavel: existe.nome, // usa nome oficial do cadastro
+  };
+
+  salvarChamados(chamados);
+
+  return res.json({
+    message: "Analista responsável atualizado com sucesso",
+    chamado: chamados[idx],
+  });
+};
+
+// =============================
 // ATUALIZAR CHAMADO
-// (protege campos sensíveis: analista não pode alterar tudo)
+// (mantém regra: não-admin não altera tudo)
+// ✅ agora permite analista alterar prioridade também
 // =============================
 exports.atualizarChamado = (req, res) => {
   const usuario = getUsuario(req);
   let chamados = lerChamados();
 
   const idx = chamados.findIndex((c) => c.id === req.params.id);
-  if (idx === -1) {
-    return res.status(404).json({ error: "Chamado não encontrado" });
-  }
+  if (idx === -1) return res.status(404).json({ error: "Chamado não encontrado" });
 
   const chamadoAtual = chamados[idx];
 
-  // admin pode tudo; analista só pode mudar status (ex.: resolver)
   let patch = req.body || {};
 
+  // admin pode tudo
   if (usuario.role !== "admin") {
     const permitido = {};
+
+    // ✅ analista pode mudar status (como já fazia)
     if (typeof patch.status === "string") permitido.status = patch.status;
+
+    // ✅ analista pode mudar prioridade (você pediu no detalhe)
+    if (typeof patch.prioridade === "string") permitido.prioridade = patch.prioridade;
+
     patch = permitido;
   }
 
   chamados[idx] = { ...chamadoAtual, ...patch };
 
   salvarChamados(chamados);
-  res.json({ message: "Chamado atualizado" });
+  res.json({ message: "Chamado atualizado", chamado: chamados[idx] });
 };
 
 // =============================
-// ADICIONAR INTERAÇÃO (autor automático pelo token)
+// ADICIONAR INTERAÇÃO
 // =============================
 exports.adicionarInteracao = (req, res) => {
   const chamados = lerChamados();
   const chamado = chamados.find((c) => c.id === req.params.id);
   const usuario = getUsuario(req);
 
-  if (!chamado) {
-    return res.status(404).json({ error: "Chamado não encontrado" });
-  }
+  if (!chamado) return res.status(404).json({ error: "Chamado não encontrado" });
 
   if (!chamado.interacoes) chamado.interacoes = [];
 
   const mensagem = (req.body?.mensagem || "").toString().trim();
-  if (!mensagem) {
-    return res.status(400).json({ error: "Mensagem é obrigatória" });
-  }
+  if (!mensagem) return res.status(400).json({ error: "Mensagem é obrigatória" });
 
   const novaInteracao = {
     data: new Date().toISOString(),
@@ -224,7 +277,6 @@ exports.adicionarInteracao = (req, res) => {
 
   chamado.interacoes.push(novaInteracao);
 
-  // regra automática
   if (chamado.status === "Aberto") {
     chamado.status = "Em Atendimento";
   }
@@ -239,7 +291,6 @@ exports.adicionarInteracao = (req, res) => {
 // =============================
 exports.deletarChamado = (req, res) => {
   const usuario = getUsuario(req);
-
   if (usuario.role !== "admin") {
     return res.status(403).json({ error: "Apenas administradores podem deletar chamados" });
   }
@@ -248,7 +299,6 @@ exports.deletarChamado = (req, res) => {
   chamados = chamados.filter((chamado) => chamado.id !== req.params.id);
 
   salvarChamados(chamados);
-
   res.json({ message: "Chamado deletado" });
 };
 
@@ -257,7 +307,6 @@ exports.deletarChamado = (req, res) => {
 // =============================
 exports.removerAnexo = (req, res) => {
   const usuario = getUsuario(req);
-
   if (usuario.role !== "admin") {
     return res.status(403).json({ error: "Apenas administradores podem remover anexos" });
   }
@@ -265,13 +314,8 @@ exports.removerAnexo = (req, res) => {
   const chamados = lerChamados();
   const chamado = chamados.find((c) => c.id === req.params.id);
 
-  if (!chamado) {
-    return res.status(404).json({ error: "Chamado não encontrado" });
-  }
-
-  if (!chamado.anexos) {
-    return res.status(400).json({ error: "Nenhum anexo encontrado" });
-  }
+  if (!chamado) return res.status(404).json({ error: "Chamado não encontrado" });
+  if (!chamado.anexos) return res.status(400).json({ error: "Nenhum anexo encontrado" });
 
   const nomeArquivo = req.params.nomeArquivo;
 
@@ -283,11 +327,8 @@ exports.removerAnexo = (req, res) => {
   }
 
   const caminhoArquivo = path.join(__dirname, "../public/uploads", nomeArquivo);
-  if (fs.existsSync(caminhoArquivo)) {
-    fs.unlinkSync(caminhoArquivo);
-  }
+  if (fs.existsSync(caminhoArquivo)) fs.unlinkSync(caminhoArquivo);
 
   salvarChamados(chamados);
-
   res.json({ message: "Anexo removido com sucesso" });
 };

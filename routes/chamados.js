@@ -63,6 +63,11 @@ const upload = multer({
 // ✅ Meus chamados (PRECISA vir ANTES de "/:id")
 router.get("/meus", chamadosController.listarMeusChamados);
 
+// ✅ NOVO: atribuir / assumir analista responsável
+// - Admin pode atribuir para outro analista (enviando { analistaResponsavel: "Nome" })
+// - Analista assume para si mesmo (não precisa enviar body)
+router.put("/:id/analista", chamadosController.definirAnalistaResponsavel);
+
 // Listar todos
 router.get("/", chamadosController.listarChamados);
 

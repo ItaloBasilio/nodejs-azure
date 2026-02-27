@@ -1640,5 +1640,29 @@
     "userId": 1,
     "role": "admin",
     "ativo": true
+  },
+  {
+    "id": 1772221803623,
+    "dataHora": "2026-02-27T19:50:03.623Z",
+    "usuarioInformado": "ricardo",
+    "resultado": "sucesso",
+    "detalhe": null,
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+    "userId": 1772050070732,
+    "role": "analista",
+    "ativo": true
+  },
+  {
+    "id": 1772222181200,
+    "dataHora": "2026-02-27T19:56:21.200Z",
+    "usuarioInformado": "pietro",
+    "resultado": "sucesso",
+    "detalhe": null,
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+    "userId": 1772220396231,
+    "role": "analista",
+    "ativo": true
   }
 ]

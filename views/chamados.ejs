@@ -94,21 +94,23 @@
                         Lista de Chamados
                     </div>
                     <div class="card-body">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Título</th>
-                                    <!-- ✅ NOVO: Cliente -->
-                                    <th>Cliente</th>
-                                    <th>Solicitante</th>
-                                    <th>Status</th>
-                                    <th>Prioridade</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbodyChamados"></tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Título</th>
+                                        <th>Cliente</th>
+                                        <th>Solicitante</th>
+                                        <th>Analista</th>
+                                        <th>Status</th>
+                                        <th>Prioridade</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyChamados"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -162,17 +164,9 @@
             return "bg-secondary";
         }
 
-        // ✅ mantém só o nome do cliente (remove CNPJ se vier junto)
-        function extrairNomeCliente(cliente) {
-            const s = (cliente || "").toString().trim();
-            if (!s) return "-";
-
-            // Ex: "Empresa XYZ - 12.345.678/0001-90" ou "Empresa XYZ | 12.345..."
-            // Pega a parte da esquerda antes de separadores comuns
-            const partes = s.split(/\s*[-|–—]\s*|\s*\|\s*/);
-            const nome = (partes[0] || "").trim();
-
-            return nome || s;
+        function textoSeguro(v, fallback = "—") {
+            const s = (v ?? "").toString().trim();
+            return s ? s : fallback;
         }
 
         async function carregarChamados() {
@@ -195,22 +189,24 @@
                 if (chamado.status === "Em Atendimento") atendimento++;
                 if (chamado.prioridade === "Crítica") criticos++;
 
+                const cliente = textoSeguro(chamado.cliente);
+                const solicitante = textoSeguro(chamado.solicitante);
+                const analista = textoSeguro(chamado.analistaResponsavel);
+
                 const row = document.createElement("tr");
 
                 row.innerHTML = `
                     <td>${chamado.id}</td>
                     <td>
                         <a href="/chamados/${chamado.id}" class="titulo-link text-dark">
-                            ${chamado.titulo}
+                            ${textoSeguro(chamado.titulo)}
                         </a>
                     </td>
-
-                    <!-- ✅ NOVO: Cliente (somente nome) -->
-                    <td>${extrairNomeCliente(chamado.cliente)}</td>
-
-                    <td>${chamado.solicitante}</td>
-                    <td><span class="badge ${badgeStatus(chamado.status)}">${chamado.status}</span></td>
-                    <td><span class="badge ${badgePrioridade(chamado.prioridade)}">${chamado.prioridade}</span></td>
+                    <td>${cliente}</td>
+                    <td>${solicitante}</td>
+                    <td>${analista}</td>
+                    <td><span class="badge ${badgeStatus(chamado.status)}">${textoSeguro(chamado.status)}</span></td>
+                    <td><span class="badge ${badgePrioridade(chamado.prioridade)}">${textoSeguro(chamado.prioridade)}</span></td>
                     <td>
                         <button class="btn btn-sm btn-success" onclick="resolverChamado('${chamado.id}')">
                             <i class="bi bi-check"></i>

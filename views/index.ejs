@@ -11,6 +11,7 @@
 
     <style>
         body { background-color: #f8f9fa; }
+
         .sidebar { height: 100vh; background-color: #212529; }
         .sidebar a {
             color: #adb5bd;
@@ -20,6 +21,9 @@
         }
         .sidebar a:hover { background-color: #343a40; color: #fff; }
         .card-dashboard { border-left: 5px solid #0d6efd; }
+
+        .titulo-link { text-decoration: none; font-weight: 500; }
+        .titulo-link:hover { text-decoration: underline; }
     </style>
 </head>
 
@@ -83,18 +87,22 @@
                 Últimos Chamados
             </div>
             <div class="card-body">
-                <table class="table table-hover">
-                    <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Título</th>
-                        <th>Usuário</th>
-                        <th>Status</th>
-                        <th>Prioridade</th>
-                    </tr>
-                    </thead>
-                    <tbody id="tabelaUltimos"></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Título</th>
+                            <th>Cliente</th>
+                            <th>Solicitante</th>
+                            <th>Analista</th>
+                            <th>Status</th>
+                            <th>Prioridade</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tabelaUltimos"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -119,6 +127,11 @@ function badgePrioridade(p) {
     if (p === "Crítica" || p === "Alta") return "bg-danger";
     if (p === "Média") return "bg-warning";
     return "bg-secondary";
+}
+
+function textoSeguro(v, fallback = "—") {
+    const s = (v ?? "").toString().trim();
+    return s ? s : fallback;
 }
 
 async function carregarChamados() {
@@ -147,14 +160,30 @@ async function carregarChamados() {
     const ultimos = chamados.slice(0,3);
 
     tabelaUltimos.innerHTML="";
+
+    if (!ultimos.length) {
+        tabelaUltimos.innerHTML = `<tr><td colspan="7" class="text-muted">Nenhum chamado encontrado.</td></tr>`;
+        return;
+    }
+
     ultimos.forEach(ch=>{
+        const cliente = textoSeguro(ch.cliente);
+        const solicitante = textoSeguro(ch.solicitante);
+        const analista = textoSeguro(ch.analistaResponsavel);
+
         tabelaUltimos.innerHTML += `
         <tr>
             <td>${ch.id}</td>
-            <td>${ch.titulo}</td>
-            <td>${ch.solicitante}</td>
-            <td><span class="badge ${badgeStatus(ch.status)}">${ch.status}</span></td>
-            <td><span class="badge ${badgePrioridade(ch.prioridade)}">${ch.prioridade}</span></td>
+            <td>
+                <a href="/chamados/${ch.id}" class="titulo-link text-dark">
+                    ${textoSeguro(ch.titulo)}
+                </a>
+            </td>
+            <td>${cliente}</td>
+            <td>${solicitante}</td>
+            <td>${analista}</td>
+            <td><span class="badge ${badgeStatus(ch.status)}">${textoSeguro(ch.status)}</span></td>
+            <td><span class="badge ${badgePrioridade(ch.prioridade)}">${textoSeguro(ch.prioridade)}</span></td>
         </tr>`;
     });
 }

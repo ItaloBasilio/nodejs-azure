@@ -10,14 +10,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
+        body { background-color: #f8f9fa; }
 
-        .sidebar {
-            height: 100vh;
-            background-color: #212529;
-        }
+        .sidebar { height: 100vh; background-color: #212529; }
 
         .sidebar a {
             color: #adb5bd;
@@ -69,26 +64,64 @@
                                 <%= new Date(chamado.dataCriacao).toLocaleString('pt-BR') %>
                             </p>
 
+                            <!-- STATUS -->
                             <div class="col-md-2 mb-2">
                                 <strong>Status:</strong>
-                                <span class="badge bg-success"><%= chamado.status %></span>
+                                <span id="statusBadge" class="badge bg-success"><%= chamado.status %></span>
+
+                                <!-- ✅ ADMIN: editar status -->
+                                <div id="adminStatusEditor" class="mt-2 d-none">
+                                    <div class="d-flex gap-2">
+                                        <select id="selectStatus" class="form-select form-select-sm">
+                                            <option value="Aberto">Aberto</option>
+                                            <option value="Em Atendimento">Em Atendimento</option>
+                                            <option value="Resolvido">Resolvido</option>
+                                        </select>
+
+                                        <button id="btnSalvarStatus" type="button" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-save"></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted d-block mt-1">Apenas Admin pode alterar status.</small>
+                                </div>
                             </div>
 
+                            <!-- CLIENTE -->
                             <div class="col-md-3 mb-2">
                                 <strong>Cliente:</strong>
                                 <%= chamado.cliente ? chamado.cliente : "—" %>
                             </div>
 
+                            <!-- CATEGORIA -->
                             <div class="col-md-3 mb-2">
                                 <strong>Categoria:</strong>
                                 <%= chamado.categoria %>
                             </div>
 
+                            <!-- PRIORIDADE -->
                             <div class="col-md-2 mb-2">
                                 <strong>Prioridade:</strong>
-                                <span class="badge bg-warning"><%= chamado.prioridade %></span>
+                                <span id="prioridadeBadge" class="badge bg-warning"><%= chamado.prioridade %></span>
+
+                                <!-- ✅ ANALISTA: editar prioridade -->
+                                <div id="analistaPrioridadeEditor" class="mt-2 d-none">
+                                    <div class="d-flex gap-2">
+                                        <select id="selectPrioridade" class="form-select form-select-sm">
+                                            <option value="Baixa">Baixa</option>
+                                            <option value="Média">Média</option>
+                                            <option value="Alta">Alta</option>
+                                            <option value="Crítica">Crítica</option>
+                                        </select>
+
+                                        <button id="btnSalvarPrioridade" type="button" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-save"></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted d-block mt-1">Apenas Analista pode alterar prioridade.</small>
+                                </div>
                             </div>
 
+                            <!-- SOLICITANTE -->
                             <div class="col-md-2 mb-2">
                                 <strong>Solicitante:</strong>
                                 <%= chamado.solicitante %>
@@ -210,6 +243,23 @@
         const chamadoId = "<%= chamado.id %>";
         let usuarioLogadoCache = null;
 
+        // valores atuais vindos do server (para setar selects)
+        const STATUS_ATUAL = "<%= chamado.status %>";
+        const PRIORIDADE_ATUAL = "<%= chamado.prioridade %>";
+
+        function badgeStatus(status) {
+            if (status === "Aberto") return "bg-warning";
+            if (status === "Resolvido") return "bg-success";
+            if (status === "Em Atendimento") return "bg-primary";
+            return "bg-secondary";
+        }
+
+        function badgePrioridade(p) {
+            if (p === "Crítica" || p === "Alta") return "bg-danger";
+            if (p === "Média") return "bg-warning";
+            return "bg-secondary";
+        }
+
         async function verificarLoginLocal() {
             const token = getToken();
             if (!token) {
@@ -280,9 +330,57 @@
             location.reload();
         }
 
-        document.getElementById("logoutBtn").addEventListener("click", () => {
-            logout();
-        });
+        // ✅ ADMIN: salvar status
+        async function salvarStatus() {
+            const sel = document.getElementById("selectStatus");
+            const novoStatus = sel?.value;
+
+            if (!novoStatus) return;
+
+            const ok = confirm(`Alterar status do chamado para "${novoStatus}"?`);
+            if (!ok) return;
+
+            const res = await authFetch(`/api/chamados/${chamadoId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: novoStatus })
+            });
+
+            const data = await res.json().catch(() => null);
+            if (!res.ok) {
+                alert(data?.error || data?.message || "Erro ao alterar status.");
+                return;
+            }
+
+            location.reload();
+        }
+
+        // ✅ ANALISTA: salvar prioridade
+        async function salvarPrioridade() {
+            const sel = document.getElementById("selectPrioridade");
+            const novaPrioridade = sel?.value;
+
+            if (!novaPrioridade) return;
+
+            const ok = confirm(`Alterar prioridade do chamado para "${novaPrioridade}"?`);
+            if (!ok) return;
+
+            const res = await authFetch(`/api/chamados/${chamadoId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prioridade: novaPrioridade })
+            });
+
+            const data = await res.json().catch(() => null);
+            if (!res.ok) {
+                alert(data?.error || data?.message || "Erro ao alterar prioridade.");
+                return;
+            }
+
+            location.reload();
+        }
+
+        document.getElementById("logoutBtn").addEventListener("click", () => logout());
 
         document.getElementById("formAnexo").addEventListener("submit", async function (e) {
             e.preventDefault();
@@ -317,11 +415,44 @@
             const usuario = await obterUsuarioLogado();
             const role = usuario?.role;
 
+            // badges com cor correta
+            const statusBadge = document.getElementById("statusBadge");
+            if (statusBadge) {
+                statusBadge.className = `badge ${badgeStatus(STATUS_ATUAL)}`;
+            }
+
+            const prioridadeBadge = document.getElementById("prioridadeBadge");
+            if (prioridadeBadge) {
+                prioridadeBadge.className = `badge ${badgePrioridade(PRIORIDADE_ATUAL)}`;
+            }
+
             // 🔒 Remover anexo: só admin
             if (role !== "admin") {
                 document.querySelectorAll(".btn-remover-anexo").forEach(btn => {
                     btn.style.display = "none";
                 });
+            }
+
+            // ✅ ADMIN: editor de status
+            const adminStatusEditor = document.getElementById("adminStatusEditor");
+            if (adminStatusEditor && role === "admin") {
+                adminStatusEditor.classList.remove("d-none");
+                const sel = document.getElementById("selectStatus");
+                if (sel) sel.value = STATUS_ATUAL;
+
+                const btn = document.getElementById("btnSalvarStatus");
+                if (btn) btn.onclick = salvarStatus;
+            }
+
+            // ✅ ANALISTA: editor de prioridade
+            const analistaPrioridadeEditor = document.getElementById("analistaPrioridadeEditor");
+            if (analistaPrioridadeEditor && role === "analista") {
+                analistaPrioridadeEditor.classList.remove("d-none");
+                const sel = document.getElementById("selectPrioridade");
+                if (sel) sel.value = PRIORIDADE_ATUAL;
+
+                const btn = document.getElementById("btnSalvarPrioridade");
+                if (btn) btn.onclick = salvarPrioridade;
             }
         }
 
@@ -337,5 +468,4 @@
     </script>
 
 </body>
-
 </html>
