@@ -1,40 +1,5 @@
 [
   {
-    "id": "1771889410713",
-    "titulo": "Problemas no programa Bizagi",
-    "cliente": "Cliente A",
-    "categoria": "Sistema fora do ar",
-    "descricao": "Estou com problemas no meu sistema Bizagi. Ao tentar procurar um arquivo para anexar, não encontro",
-    "prioridade": "Baixa",
-    "solicitante": "Adriana",
-    "status": "Em Atendimento",
-    "dataCriacao": "2026-02-23T23:30:10.713Z",
-    "criadoPor": "Admin",
-    "interacoes": [
-      {
-        "data": "2026-02-24T00:43:53.781Z",
-        "autor": "Admin",
-        "role": "admin",
-        "mensagem": "Instalado o winrar na maquina da usuaria e extraido os arquivos da pasta. Resolvido."
-      },
-      {
-        "data": "2026-02-25T20:05:23.973Z",
-        "autor": "Admin",
-        "role": "admin",
-        "mensagem": "Teste de interação"
-      }
-    ],
-    "anexos": [
-      {
-        "nomeOriginal": "DB.jpeg",
-        "nomeSalvo": "1772049911677-104215721.jpeg",
-        "caminho": "/uploads/1772049911677-104215721.jpeg",
-        "dataUpload": "2026-02-25T20:05:11.684Z",
-        "enviadoPor": "Admin"
-      }
-    ]
-  },
-  {
     "id": "1772020899851",
     "titulo": "Configuração de máquina",
     "cliente": "Nicoletti Advogados",
@@ -151,6 +116,41 @@
     "dataCriacao": "2026-02-27T12:19:40.804Z",
     "criadoPor": "Italo",
     "interacoes": [],
+    "anexos": []
+  },
+  {
+    "id": "1772211522432",
+    "titulo": "Atualização de Anti-virus",
+    "cliente": "TX Capital",
+    "categoria": "Segurança da Informação > Atualização de antivírus",
+    "descricao": "Colaborador entrou em contato solicitando suporte para atualizar o antivirus",
+    "prioridade": "Baixa",
+    "solicitante": "Carla",
+    "status": "Aberto",
+    "dataCriacao": "2026-02-27T16:58:42.432Z",
+    "criadoPor": "Ricardo",
+    "interacoes": [],
+    "anexos": []
+  },
+  {
+    "id": "1772220451224",
+    "titulo": "Preciso de acesso a uma pasta",
+    "cliente": "New Life Hotel",
+    "categoria": "Acesso e Permissões > Permissões de pastas",
+    "descricao": "Por favor, preciso de um acesso a pasta comercial.",
+    "prioridade": "Baixa",
+    "solicitante": "Rafaela",
+    "status": "Resolvido",
+    "dataCriacao": "2026-02-27T19:27:31.224Z",
+    "criadoPor": "Pietro Martinez",
+    "interacoes": [
+      {
+        "data": "2026-02-27T19:27:56.596Z",
+        "autor": "Pietro Martinez",
+        "role": "analista",
+        "mensagem": "Acesso liberado durante o acesso remoto."
+      }
+    ],
     "anexos": []
   }
 ]

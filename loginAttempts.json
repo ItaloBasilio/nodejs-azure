@@ -19,5 +19,19 @@
     "firstFailAt": null,
     "lastFailAt": null,
     "blockedUntil": null
+  },
+  {
+    "usuario": "ricardo",
+    "failCount": 0,
+    "firstFailAt": null,
+    "lastFailAt": null,
+    "blockedUntil": null
+  },
+  {
+    "usuario": "pietro",
+    "failCount": 0,
+    "firstFailAt": null,
+    "lastFailAt": null,
+    "blockedUntil": null
   }
 ]

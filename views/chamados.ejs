@@ -99,7 +99,9 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Título</th>
-                                    <th>Usuário</th>
+                                    <!-- ✅ NOVO: Cliente -->
+                                    <th>Cliente</th>
+                                    <th>Solicitante</th>
                                     <th>Status</th>
                                     <th>Prioridade</th>
                                     <th>Ações</th>
@@ -160,6 +162,19 @@
             return "bg-secondary";
         }
 
+        // ✅ mantém só o nome do cliente (remove CNPJ se vier junto)
+        function extrairNomeCliente(cliente) {
+            const s = (cliente || "").toString().trim();
+            if (!s) return "-";
+
+            // Ex: "Empresa XYZ - 12.345.678/0001-90" ou "Empresa XYZ | 12.345..."
+            // Pega a parte da esquerda antes de separadores comuns
+            const partes = s.split(/\s*[-|–—]\s*|\s*\|\s*/);
+            const nome = (partes[0] || "").trim();
+
+            return nome || s;
+        }
+
         async function carregarChamados() {
             const response = await authFetch(API);
             if (!response.ok) return;
@@ -189,6 +204,10 @@
                             ${chamado.titulo}
                         </a>
                     </td>
+
+                    <!-- ✅ NOVO: Cliente (somente nome) -->
+                    <td>${extrairNomeCliente(chamado.cliente)}</td>
+
                     <td>${chamado.solicitante}</td>
                     <td><span class="badge ${badgeStatus(chamado.status)}">${chamado.status}</span></td>
                     <td><span class="badge ${badgePrioridade(chamado.prioridade)}">${chamado.prioridade}</span></td>

@@ -45,5 +45,13 @@
     "tentativasInvalidas": 0,
     "bloqueadoAte": null,
     "bloqueado": false
+  },
+  {
+    "id": 1772220396231,
+    "nome": "Pietro Martinez",
+    "usuario": "pietro",
+    "senha": "1",
+    "role": "analista",
+    "ativo": true
   }
 ]

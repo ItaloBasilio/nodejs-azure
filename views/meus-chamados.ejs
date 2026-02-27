@@ -29,6 +29,8 @@
 
         .titulo-link { text-decoration: none; font-weight: 500; }
         .titulo-link:hover { text-decoration: underline; }
+
+        .filter-hint { font-size: .9rem; }
     </style>
 </head>
 
@@ -94,12 +96,44 @@
                         Meus Chamados
                     </div>
                     <div class="card-body">
+
+                        <!-- ✅ FILTRO -->
+                        <div class="row g-2 align-items-end mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label mb-1">Pesquisar</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="filtroChamados"
+                                        placeholder="Digite ID, título, cliente, solicitante, status ou prioridade..."
+                                        autocomplete="off"
+                                    >
+                                    <button class="btn btn-outline-secondary" type="button" id="btnLimparFiltroChamados">
+                                        Limpar
+                                    </button>
+                                </div>
+                                <div class="text-muted filter-hint mt-1">
+                                    Busca em: <strong>ID</strong>, <strong>Título</strong>, <strong>Cliente</strong>, <strong>Solicitante</strong>, <strong>Status</strong>, <strong>Prioridade</strong>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 text-md-end">
+                                <div class="text-muted">
+                                    <span id="contadorChamados">0</span> resultado(s)
+                                </div>
+                            </div>
+                        </div>
+
                         <table class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>#</th>
                                     <th>Título</th>
-                                    <th>Usuário</th>
+                                    <!-- ✅ NOVO: Cliente -->
+                                    <th>Cliente</th>
+                                    <th>Solicitante</th>
                                     <th>Status</th>
                                     <th>Prioridade</th>
                                     <th>Ações</th>
@@ -107,7 +141,7 @@
                             </thead>
                             <tbody id="tbodyChamados">
                                 <tr>
-                                    <td colspan="6" class="text-muted">Carregando...</td>
+                                    <td colspan="7" class="text-muted">Carregando...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -124,7 +158,6 @@
     <script>
         const API = "/api/chamados/meus";
 
-        // ✅ marca o item atual no menu
         function marcarMenuAtivo() {
             const path = window.location.pathname;
             document.querySelectorAll(".sidebar a").forEach(a => {
@@ -164,19 +197,94 @@
             return "bg-secondary";
         }
 
+        function normalizarTexto(s) {
+            return (s || "")
+                .toString()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .trim();
+        }
+
+        // ✅ mantém só o nome do cliente (remove CNPJ se vier junto)
+        function extrairNomeCliente(cliente) {
+            const s = (cliente || "").toString().trim();
+            if (!s) return "-";
+
+            // Ex: "Empresa XYZ - 12.345.678/0001-90" ou "Empresa XYZ | 12.345..."
+            const partes = s.split(/\s*[-|–—]\s*|\s*\|\s*/);
+            const nome = (partes[0] || "").trim();
+
+            return nome || s;
+        }
+
+        function aplicarFiltroChamados() {
+            const input = document.getElementById("filtroChamados");
+            const termo = normalizarTexto(input?.value || "");
+            const tbody = document.getElementById("tbodyChamados");
+            const contador = document.getElementById("contadorChamados");
+            if (!tbody) return;
+
+            const linhas = Array.from(tbody.querySelectorAll("tr[data-search]"));
+            if (!linhas.length) {
+                if (contador) contador.innerText = "0";
+                return;
+            }
+
+            let visiveis = 0;
+            linhas.forEach(tr => {
+                const hay = tr.getAttribute("data-search") || "";
+                const match = !termo || hay.includes(termo);
+                tr.classList.toggle("d-none", !match);
+                if (match) visiveis++;
+            });
+
+            if (contador) contador.innerText = String(visiveis);
+
+            const avisoId = "linhaSemResultadosChamados";
+            let aviso = document.getElementById(avisoId);
+            if (!visiveis) {
+                if (!aviso) {
+                    aviso = document.createElement("tr");
+                    aviso.id = avisoId;
+                    aviso.innerHTML = `<td colspan="7" class="text-muted">Nenhum chamado encontrado para o filtro atual.</td>`;
+                    tbody.appendChild(aviso);
+                } else {
+                    aviso.classList.remove("d-none");
+                }
+            } else {
+                if (aviso) aviso.classList.add("d-none");
+            }
+        }
+
+        function prepararFiltroChamados() {
+            const input = document.getElementById("filtroChamados");
+            const btnLimpar = document.getElementById("btnLimparFiltroChamados");
+            if (!input || !btnLimpar) return;
+
+            input.addEventListener("input", aplicarFiltroChamados);
+            btnLimpar.addEventListener("click", () => {
+                input.value = "";
+                input.focus();
+                aplicarFiltroChamados();
+            });
+        }
+
         async function carregarChamados() {
             const response = await authFetch(API);
 
             const tbody = document.getElementById("tbodyChamados");
+            const contador = document.getElementById("contadorChamados");
 
             if (!response.ok) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="text-danger">
+                        <td colspan="7" class="text-danger">
                             Erro ao carregar seus chamados (${response.status}).
                         </td>
                     </tr>
                 `;
+                if (contador) contador.innerText = "0";
                 return;
             }
 
@@ -190,7 +298,7 @@
             if (!chamados || chamados.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="text-muted">
+                        <td colspan="7" class="text-muted">
                             Você ainda não abriu nenhum chamado.
                         </td>
                     </tr>
@@ -200,6 +308,8 @@
                 document.getElementById("cardResolvidos").innerText = 0;
                 document.getElementById("cardAtendimento").innerText = 0;
                 document.getElementById("cardCriticos").innerText = 0;
+
+                if (contador) contador.innerText = "0";
                 return;
             }
 
@@ -210,7 +320,13 @@
                 if (chamado.status === "Em Atendimento") atendimento++;
                 if (chamado.prioridade === "Crítica") criticos++;
 
+                const clienteNome = extrairNomeCliente(chamado.cliente);
+                const search = normalizarTexto(
+                    `${chamado.id} ${chamado.titulo} ${clienteNome} ${chamado.solicitante} ${chamado.status} ${chamado.prioridade}`
+                );
+
                 const row = document.createElement("tr");
+                row.setAttribute("data-search", search);
 
                 row.innerHTML = `
                     <td>${chamado.id}</td>
@@ -219,6 +335,10 @@
                             ${chamado.titulo}
                         </a>
                     </td>
+
+                    <!-- ✅ NOVO: Cliente -->
+                    <td>${clienteNome}</td>
+
                     <td>${chamado.solicitante}</td>
                     <td><span class="badge ${badgeStatus(chamado.status)}">${chamado.status}</span></td>
                     <td><span class="badge ${badgePrioridade(chamado.prioridade)}">${chamado.prioridade}</span></td>
@@ -236,6 +356,10 @@
             document.getElementById("cardResolvidos").innerText = resolvidos;
             document.getElementById("cardAtendimento").innerText = atendimento;
             document.getElementById("cardCriticos").innerText = criticos;
+
+            if (contador) contador.innerText = String(chamados.length);
+
+            aplicarFiltroChamados();
         }
 
         async function resolverChamado(id) {
@@ -254,6 +378,8 @@
 
         async function iniciar() {
             marcarMenuAtivo();
+
+            prepararFiltroChamados();
 
             const ok = await verificarLoginLocal();
             if (!ok) return;
